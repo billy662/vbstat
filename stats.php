@@ -172,6 +172,10 @@
 			width: fit-content;
 		}
 
+		.radio-container-grid .span-2-columns {
+			grid-column: span 2;
+		}
+
 		.error-container .radio-label,
 		.in-play-container .radio-label{
 			width: 125px;
@@ -361,9 +365,14 @@
 									$result = $conn->query($sql);
 									if($result->num_rows > 0){
 										while($row = $result->fetch_assoc()){
-											echo "<div class=\"radio-container\">";
-											echo "<input class=\"radio-input\" type=\"radio\" required name=\"aid\" id=\"in_play_" . $row["aname"] . "\" value=\"" . $row["aid"] . "\">";
-											echo "<label class=\"radio-label label-in-play\" for=\"in_play_" . $row["aname"] . "\">" . $row["aname"] . "</label>";
+											$isMultiBlock = $row["aname"] == "多人攔網";
+											$containerClass = $isMultiBlock ? "radio-container span-2-columns" : "radio-container";
+											$labelStyle = $isMultiBlock ? " style=\"width: 100%;\"" : "";
+											
+											echo "<div class=\"{$containerClass}\">";
+											echo "<input class=\"radio-input\" type=\"radio\" required name=\"aid\" 
+												  id=\"in_play_{$row['aname']}\" value=\"{$row['aid']}\">";
+											echo "<label class=\"radio-label label-in-play\" for=\"in_play_{$row['aname']}\"{$labelStyle}>{$row['aname']}</label>";
 											echo "</div>";
 										}
 									}
