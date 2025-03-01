@@ -3,7 +3,7 @@ include 'conn.php';
 include 'functions.php';
 
 function getMaxResid($conn){
-    $sql = "SELECT * FROM `result` WHERE `resid` = (SELECT MAX(`resid`) FROM `result`)";
+    $sql = "SELECT `resid` FROM `result` WHERE `resid` = (SELECT MAX(`resid`) FROM `result`)";
     $result = $conn->query($sql);
     $row = $result->fetch_assoc();
     return $row["resid"];
@@ -56,12 +56,12 @@ if($action == "add"){
         $resid = getMaxResid($conn);
         $fields = ["resid", "scored", "lost"];
         $values = [$resid, $scored, $lost];
-        echo "{$values[0]} - {$values[1]} : {$values[2]}";
-        if($score == 1){
-            $values[1]++;
-        }
-        elseif($score == -1){
+
+        if($score == -1){
             $values[2]++;
+        }
+        else{
+            $values[1] += $score;
         }
         insert($conn, "scoreboard", $fields, $values, "stats.php?mid=$mid&sid=$sid&result=Successfully added");
     }

@@ -83,6 +83,22 @@
 			width: 30%; 
 		}
 
+		.information-card {
+			background-color: #2a2a2a;
+			color: white;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px;
+			text-align: center;
+			box-shadow: 0px 0px 10px 0px rgba(255, 255, 255, 0.75);
+			font-weight: bold;
+		}
+
+		#edit-match-form input{
+			font-size: 0.8em;
+			margin: 30px;
+		}
+
 	</style>
 
 </head>
@@ -105,6 +121,43 @@
 			</a>
 		</div>
 	</nav>
+
+	<div class="information-card">
+		<?php
+			// Fetch match data
+			$query = "SELECT tgrade, trate, youtube FROM matches WHERE mid = ?";
+			$stmt = $conn->prepare($query);
+			$stmt->bind_param("i", $mid);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$match = $result->fetch_assoc();
+		?>
+		<p>組別: <?php echo htmlspecialchars($match['tgrade'] ?? 'N/A'); ?></p>
+		<p>Rating: <?php echo htmlspecialchars($match['trate'] ?? 'N/A'); ?></p>
+		<?php
+			$youtube = "";
+			if($match['youtube'] != null || $match['youtube'] == "")
+				$youtube = $match['youtube'];
+			echo "<a href=\"". $youtube ."\">YouTube</a>";
+		?>
+		<div style="position: relative;">
+			<div style="position: absolute; bottom: 0; right: 0;">
+				<button type="button" id="btnEditMatch" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#edit-match-form">Edit</button>
+			</div>
+		</div>
+
+		<form action="matchHandler.php">
+			<input name="action" value="edit" style="display: none;">
+			<div id="edit-match-form" class="collapse">
+				<div class="edit-match-container d-flex align-items-center"> 
+					<input type="text" name="youtube" class="form-control flex-grow-1 me-2" value="<?php echo $youtube; ?>">
+					<input type="submit" id="add-set" class="btn btn-outline-success" value="Ok" />
+					<input type="text" name="mid" value="<?php echo $mid; ?>" style="display: none;">
+				</div>
+			</div>
+		</form>
+	</div>
+
 	<table class="table table-striped table-dark"> 
 		<thead>
 			<tr>
@@ -161,7 +214,7 @@
             }
 		?>
 		
-		<button type="button" class="btn btn-success btn-block"  data-bs-toggle="collapse" data-bs-target="#new-set-form">Add Set <?php  echo $setNo + 1; ?></button>
+		<button type="button" class="btn btn-success btn-block" data-bs-toggle="collapse" data-bs-target="#new-set-form">Add Set <?php  echo $setNo + 1; ?></button>
 	</div>
 
     <form action="setHandler.php">
@@ -204,6 +257,18 @@
         $conn->close();
     ?>
 	<script> 
+		function isValidHttpUrl(string) {
+			let url;
+			
+			try {
+				url = new URL(string);
+			} catch (_) {
+				return false;  
+			}
+
+			return url.protocol === "http:" || url.protocol === "https:";
+		}
+
     	$(document).ready(function(){ 
     		var sid = 0;
 			$("#confirmDeleteModal").prependTo("body");

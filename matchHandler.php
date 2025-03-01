@@ -2,15 +2,30 @@
 	include 'conn.php';
 	include 'functions.php';
 
+	$acid = 0;
+	// Check if the user is logged in
+	if (!isset($_COOKIE['acid'])) {
+		header('Location: login.php');
+		exit();
+	}
+	else{
+		$acid = $_COOKIE['acid'];
+	}
+
 	$action = $_GET['action'];
 
 	if($action == "add"){
 		$date = $_GET['date'];
 		$type = $_GET['type'];
 		$tid = $_GET['tid'];
+		$tgrade = $_GET['tgrade'];
+		$trate = $_GET['trate'];
+		if(empty($_GET['youtube'])) $youtube = NULL;
+		else
+			$youtube = $_GET['youtube'];
 
-		$fields = ["date", "type", "tid"];
-		$values = [$date, $type, $tid];
+		$fields = ["acid","date", "type", "tid", "tgrade", "trate", "youtube"];
+		$values = [$acid, $date, $type, $tid, $tgrade, $trate, $youtube];
 
 		insert($conn, "matches", $fields, $values, "index.php");
 	} 
@@ -39,6 +54,12 @@
 			}
 		}
 		delete($conn, "matches", "`matches`.`mid`", $mid, "index.php");
+	}
+	elseif($action == "edit"){
+		$mid = $_GET['mid'];
+		$youtube = "'" . $_GET['youtube'] . "'";
+
+		update($conn, "matches", "`youtube`", $youtube, "`matches`.`mid`", $mid, "set.php?mid=$mid");
 	}
 
 	// Close the database connection 

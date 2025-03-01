@@ -45,6 +45,22 @@
 		.btn{
 			font-size: 1em;
 		}
+
+		.new-opponent-container { 
+			width: 100%; 
+			display: flex; 
+			margin-top: 10px; 
+		} 
+
+		#opponent-name{ 
+			width: 70%; 
+			margin-right: 10px; 
+			font-size: 1em;
+		} 
+
+		#add-opponent{ 
+			width: 30%; 
+		}
 	</style>
 
 </head>
@@ -60,9 +76,7 @@
 		<table class="table table-striped table-dark"> 
 			<thead>
 				<tr>
-					<th style="width:55%;">Opponent</th>
-					<th style="width:15%;">Rating</th>
-					<th style="width:15%;">組別</th>
+					<th style="width:90%;">Opponent</th>
 					<th style="width:10%;"></th>
 				</tr>
 			</thead>
@@ -74,8 +88,6 @@
 						while($row = $result->fetch_assoc()){
 							echo "<tr>"; 
 							echo "<td>" . $row["tname"] . "</td>"; 
-							echo "<td>" . $row["trate"] . "</td>";
-							echo "<td>" . $row["tgrade"] . "</td>";
 
 							// Check if this team has any matches
                             $sql = "SELECT * FROM `matches` WHERE `tid` = " . $row["tid"];
@@ -98,8 +110,18 @@
 		</table>
 		
 		<div class="d-grid"> 
-			<button type="button" class="btn btn-success btn-block" data-bs-toggle="collapse" data-bs-target="#new-opponent-form" onclick="location.href='newOpponent.php'">Add new opponent</button>
+			<button type="button" class="btn btn-success btn-block" data-bs-toggle="collapse" data-bs-target="#new-opponent-form">Add new opponent</button>
 		</div>
+		
+		<form action="opponentsHandler.php">
+			<input name="action" value="add" style="display: none;">
+			<div id="new-opponent-form" class="collapse">
+				<div class="new-opponent-container"> 
+					<input type="text" id="opponent-name" class="form-control input-new-opponent" placeholder="Opponent" name="tname" required> 
+					<input type="submit" id="add-opponent" class="btn btn-outline-success" value="Add" />
+				</div>
+			</div>
+		</form>
 
 		<!-- Modal -->
 		<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">

@@ -4,6 +4,8 @@
 	include 'conn.php'; 
 	include 'functions.php';
 
+	$acid = getAcid();
+
 	$mid = isset($_GET['mid']) && is_numeric($_GET['mid']) ? $_GET['mid'] : -1;
 	$sid = isset($_GET['sid']) && is_numeric($_GET['sid']) ? $_GET['sid'] : -1;
 
@@ -180,6 +182,14 @@
 			background-color: #333;
 		}
 
+		.all-actions-container{
+			width: 100%;
+		}
+
+		#allActionsTable{
+			font-size: 0.69em;
+		}
+
 	</style>
 
 </head>
@@ -314,7 +324,7 @@
 							<div class="radio-container-grid">
 								<!-- create cookie that saves the player's last role -->
 								<?php
-									$sql = "SELECT * FROM `player`";
+									$sql = "SELECT * FROM `player` WHERE `acid` = $acid OR `acid` IS NULL ORDER BY `player`.`pid` ASC";
 									$result = $conn->query($sql);
 									if($result->num_rows > 0){
 										while($row = $result->fetch_assoc()){
@@ -345,9 +355,9 @@
 							</div>
 						</td>
 						<td class="in-play-container" style="text-align: -webkit-center;">
-							<div style="width: fit-content;">
+							<div class="radio-container-grid">
 								<?php
-									$sql = "SELECT * FROM `action` WHERE `score` = 0";
+									$sql = "SELECT * FROM `action` WHERE `score` = 0 ORDER BY `action`.`sorting` ASC";
 									$result = $conn->query($sql);
 									if($result->num_rows > 0){
 										while($row = $result->fetch_assoc()){
@@ -363,7 +373,7 @@
 						<td class="score-container" style="text-align: -webkit-center;">
 							<div style="width: fit-content;">
 								<?php
-									$sql = "SELECT * FROM `action` WHERE `score` = 1";
+									$sql = "SELECT * FROM `action` WHERE `score` > 0";
 									$result = $conn->query($sql);
 									if($result->num_rows > 0){
 										while($row = $result->fetch_assoc()){
@@ -377,7 +387,7 @@
 							</div>
 						</td>
 						<td class="error-container" style="text-align: -webkit-center;">
-							<div class="radio-container-grid">
+							<div style="width: fit-content;">
 								<?php
 									$sql = "SELECT * FROM `action` WHERE `score` = -1";
 									$result = $conn->query($sql);
@@ -397,6 +407,67 @@
 			</table>
 		</div>
 	</form>
+
+	<div class="all-actions-container mt-1">
+			<button class="btn btn-secondary mb-2 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#allActionsTable" aria-expanded="false" aria-controls="allActionsTable">
+			Show all actions
+		</button>
+		<div class="collapse" id="allActionsTable">
+			<?php
+				$sql = "SELECT 
+						player.pname AS player_name, 
+    					role.rName AS role_name,
+						action.aname AS action_name
+					FROM 
+						result
+					JOIN 
+						player ON result.pid = player.pid
+					JOIN 
+						action ON result.aid = action.aid
+					JOIN 
+						sets ON result.sid = sets.sid	
+					JOIN 
+						role ON result.rid = role.rid
+					JOIN 
+						matches ON sets.mid = matches.mid
+					WHERE 
+						matches.mid = $mid
+						AND sets.sid = $sid
+					ORDER BY result.resid DESC;";
+				$result = $conn->query($sql);
+				$rowsCount = $result->num_rows;
+				
+				echo "<span style=\"color: white\"><b>Total: $rowsCount</b></span><br>";
+				
+				if($rowsCount > 0){
+			?>
+			
+			<table class="table table-striped table-dark">
+				<thead>
+					<tr>
+						<th style="width:15%">Player</th>
+						<th style="width:15%">Role</th>
+						<th style="width:70%">Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+						while($row = $result->fetch_assoc()){
+							echo "<tr>";
+							echo "<td>{$row['player_name']}</td>";
+							echo "<td>{$row['role_name']}</td>";
+							echo "<td>{$row['action_name']}</td>";
+							echo "</tr>";
+						}
+					?>
+				</tbody>
+			</table>
+			<?php
+				}
+			?>
+		</div>
+	</div>
+
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
 			let validPairs = [];
@@ -546,6 +617,18 @@
 				var toastExample = new bootstrap.Toast(document.getElementById('toastBox')); 
 				toastExample.show();
 			}
+		});
+
+
+		const collapseTable = document.getElementById('allActionsTable');
+		const toggleButton = document.querySelector('[data-bs-toggle="collapse"]');
+
+		collapseTable.addEventListener('show.bs.collapse', () => {
+			toggleButton.textContent = 'Hide';
+		});
+
+		collapseTable.addEventListener('hide.bs.collapse', () => {
+			toggleButton.textContent = 'Show all actions';
 		});
 	</script>
 </body>

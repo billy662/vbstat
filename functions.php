@@ -34,6 +34,11 @@
 		executeQuery($conn, $sql, $redirect);
 	}
 
+	function update($conn, $table, $field, $value, $whereField, $whereValue, $redirect){
+		$sql = "UPDATE $table SET $field = $value WHERE $whereField = $whereValue";
+		executeQuery($conn, $sql, $redirect);
+	}
+
 	function getScoreboard($conn, $sid){
 		$scoreboard_sql = "
 			SELECT 
@@ -55,9 +60,27 @@
 			$scoreboard_result = array("total_scored" => 0, "total_lost" => 0);
 		}
 		else{
-			$scoreboard_result = array("total_scored" => $scoreboard_result["total_scored"], "total_lost" => $scoreboard_result["total_lost"]);
+			$scored = $scoreboard_result["total_scored"];
+			$lost = $scoreboard_result["total_lost"];
+			if(substr($scored, -2) == ".0"){
+				$scored = substr($scored, 0, -2);
+			}
+			if(substr($lost, -2) == ".0"){
+				$lost = substr($lost, 0, -2);
+			}
+			$scoreboard_result = array("total_scored" => $scored, "total_lost" => $lost);
 		}
 
 		return $scoreboard_result;
+	}
+
+	function getAcid(){
+		if(isset($_COOKIE['acid'])){
+			return $_COOKIE['acid'];
+		}
+		else{
+			header('Location: login.php');
+			exit();
+		}
 	}
 ?>

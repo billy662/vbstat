@@ -88,6 +88,47 @@
 							</select>
 	                    </td>
 	                </tr>
+					<tr>
+						<td>
+							組別
+						</td>
+						<td>
+							<select name="tgrade" class="form-control">
+								<option value="甲一">甲一</option>
+								<option value="甲二">甲二</option>
+								<option value="乙組">乙組</option>
+								<option value="丙組">丙組</option>
+								<option value="其他">其他</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Rating
+						</td>
+						<td>
+							<select name="trate" class="form-control">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                            </select>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							YouTube
+						</td>
+						<td>
+							<input type="text" name="youtube" class="form-control">
+						</td>
+					</tr>
 
 	            </tbody>
 	        </table>

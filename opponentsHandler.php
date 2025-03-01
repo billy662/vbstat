@@ -6,11 +6,9 @@
 
 	if($action == "add"){
 		$tname = $_GET['tname'];
-		$trate = $_GET['trate'];
-		$tgrade = $_GET['tgrade'];
 
-		$fields = ["tname", "trate", "tgrade"];
-		$values = [$tname, $trate, $tgrade];
+		$fields = ["tname"];
+		$values = [$tname];
 
 		insert($conn, "team", $fields, $values, "opponents.php");
 	} 
@@ -20,5 +18,5 @@
 	}
 
 	// Close the database connection 
-	$conn->close();			
+	$conn->close();
 ?>

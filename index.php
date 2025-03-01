@@ -2,6 +2,9 @@
 <html lang="en">
 <?php 
 	include 'conn.php'; 
+	include 'functions.php';
+
+	$acid = getAcid();
 ?>
 
 <head>
@@ -32,6 +35,15 @@
 			width: 50%;
 		}
 
+		.navbar-bottom {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+			background-color: #343a40;
+			z-index: 1030;
+			padding: 10px;
+		}
+
 	</style>
 
 </head>
@@ -57,7 +69,7 @@
 	        	</thead>
 	            <tbody>
 	            	<?php
-						$sql = "SELECT * FROM `matches`";
+						$sql = "SELECT * FROM `matches` WHERE acid = " . $acid;
 						$result = $conn->query($sql);
 						if($result->num_rows > 0){
 							while($row = $result->fetch_assoc()){
@@ -112,6 +124,11 @@
 	        </table>
 	    </div>
     </div>
+	<nav class="navbar navbar-dark navbar-bottom">
+		<div class="container-fluid">
+			<button class="btn btn-outline-danger" id="btnLogout">Logout</button>
+		</div>
+	</nav>
     <script> 
     	$(document).ready(function(){ 
     		var mid = 0;
@@ -121,6 +138,10 @@
 			});
 			$('#btnConfirm').click(function() {
 				window.location.href = 'matchHandler.php?action=delete&mid=' + mid;
+			});
+			$('#btnLogout').click(function() {
+				document.cookie = "acid=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;";
+				window.location.href = 'login.php';
 			});
 		});
     </script>

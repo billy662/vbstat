@@ -2,6 +2,9 @@
 <html lang="en">
 <?php 
 	include 'conn.php'; 
+	include 'functions.php';
+
+	$acid = getAcid();
 ?>
 
 <head>
@@ -81,7 +84,7 @@
 			</thead>
 			<tbody>
 				<?php
-					$sql = "SELECT * FROM `player`";
+					$sql = "SELECT * FROM `player` WHERE acid = " . $acid;
 					$result = $conn->query($sql);
 					if($result->num_rows > 0){
 						while($row = $result->fetch_assoc()){

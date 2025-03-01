@@ -2,13 +2,14 @@
 	include 'conn.php';
 	include 'functions.php';
 
+	$acid = getAcid();
 	$action = $_GET['action'];
 
 	if($action == "add"){
 		$player = $_GET['player'];
 
-		$fields = "pname";
-		$values = $player;
+		$fields = ["acid", "pname"];
+		$values = [$acid, $player];
 
 		insert($conn, "player", $fields, $values, "players.php");
 	} 
