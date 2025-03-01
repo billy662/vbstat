@@ -8,8 +8,18 @@ if ($mid == 0)
 // Database connection
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
-// Set CSV headers
+// Get the match info first for the filename
+$sql = "SELECT matches.date, matches.type, team.tname 
+        FROM matches 
+        JOIN team ON matches.tid = team.tid 
+        WHERE matches.mid = $mid";
+$result = $conn->query($sql);
+$matchInfo = $result->fetch_assoc();
+
+// Set headers in correct order
 header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename='.$matchInfo['date'].'_'.$matchInfo['type'].'_'.$matchInfo['tname'].'.csv');
+
 
 // Open output stream
 $output = fopen('php://output', 'w');
@@ -72,8 +82,6 @@ while ($row = $result->fetch_assoc()) {
     }
     fputcsv($output, $row);
 }
-
-header('Content-Disposition: attachment; filename='.$match_date.'_'.$match_type.'_'.$team_name.'.csv');
 
 // Add empty row between tables
 fputcsv($output, []);
