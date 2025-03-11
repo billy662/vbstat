@@ -1,13 +1,14 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "vbstat";
-/* Production settings - commented out for local development
-$servername = "sql103.infinityfree.com";
-$username = "if0_38216806";
-$password = "f2yRcuXjHgmHgBl";
-$dbname = "if0_38216806_vbstat"; */
+// Load environment variables from .env file if it exists
+if (file_exists(__DIR__ . '/.env.php')) {
+    include __DIR__ . '/.env.php';
+} else {
+    // Default local development settings
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "vbstat";
+}
 
 try {
     // Create connection

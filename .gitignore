@@ -1,0 +1,9 @@
+# Ignore environment configuration
+.env.php
+.env
+*.env
+
+# Other common files to ignore
+/vendor/
+.DS_Store
+Thumbs.db
