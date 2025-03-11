@@ -32,7 +32,7 @@
 		}
 
 		body{
-			font-size: 1.3em;
+			font-size: 1em;
 		}
 
 		.navbar-brand{
@@ -49,6 +49,10 @@
 
 		.btn{
 			font-size: 1em;
+		}
+
+		table .btn{
+			font-size: 0.8em;
 		}
 
 		.new-opponent-container { 

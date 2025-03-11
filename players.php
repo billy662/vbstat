@@ -29,11 +29,15 @@
 		}
 
 		body{
-			font-size: 1.3em;
+			font-size: 1em;
 		}
 
 		.btn{
 			font-size: 1em;
+		}
+		
+		table .btn {
+			font-size: 0.8em;
 		}
 
 		.navbar-brand{

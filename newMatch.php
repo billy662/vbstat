@@ -22,7 +22,7 @@
 			padding: 0; 
 			height: 100%; 
 			width: 100%;
-			font-size: 1.5em;
+			font-size: 1em;
 		} 
 
 		.navbar-brand{
@@ -36,18 +36,6 @@
 		.back{
 			font-size: 1.2em;
 		}
-
-		.page-title {
-			color: white;
-			margin: 15px 0;
-			text-align: center;
-		}
-
-		@media (max-width: 768px) {
-			body, html {
-				font-size: 1.2em;
-			}
-		}
 	</style>
 
 </head>
@@ -58,7 +46,6 @@
 	</div>
 	</nav>
     <div class="container-fluid">
-    	<h2 class="page-title">Add New Match</h2>
     	<form action="matchHandler.php" method="POST" id="matchForm">
     		<input name="action" value="add" type="hidden">
 	        <table class="table table-striped table-dark">

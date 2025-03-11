@@ -39,11 +39,15 @@
 		}
 
 		body{
-			font-size: 1.3em;
+			font-size: 1em;
 		}
 
 		.btn{
 			font-size: inherit;
+		}
+
+		table .btn{
+			font-size: 0.8em;
 		}
 
 		.btnDelete{
@@ -53,6 +57,10 @@
 		
 		.btnDelete:hover {
 			transform: scale(1.1);
+		}
+
+		.navbar {
+			padding: 0px;
 		}
 
 		.navbar-brand{
@@ -227,7 +235,10 @@
 						echo "<tr>"; 
 						echo '<td><a href="stats.php?mid='. $mid . '&sid='. $row["sid"] . '">Set '. htmlspecialchars($row["setNo"]) ."</a></td>"; 
 						$scoreboard = getScoreboard($conn, $row["sid"]);
-						echo "<td class=\"fw-bold\">{$scoreboard["total_scored"]} : {$scoreboard["total_lost"]}</td>";
+						// Ensure both values are displayed, defaulting to 0 if not set
+						$scored = isset($scoreboard["total_scored"]) ? intval($scoreboard["total_scored"]) : 0;
+						$lost = isset($scoreboard["total_lost"]) ? intval($scoreboard["total_lost"]) : 0;
+						echo "<td class=\"fw-bold\">{$scored} : {$lost}</td>";
 						echo "<td>" . htmlspecialchars($row["points"]) . "</td>";
 						echo "<td><button type=\"button\" class=\"btn btn-outline-danger btn-lg btnDelete\" value=\"" . $row["sid"] . "\" data-bs-toggle=\"modal\" data-bs-target=\"#confirmDeleteModal\" data-bs-backdrop=\"false\"><i class=\"fa-regular fa-trash-can\"></i></button></td>"; 
 						echo "</tr>";

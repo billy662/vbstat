@@ -1,14 +1,9 @@
 <?php
-// Load environment variables from .env file if it exists
-if (file_exists(__DIR__ . '/.env.php')) {
-    include __DIR__ . '/.env.php';
-} else {
-    // Default local development settings
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "vbstat";
-}
+
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "vbstat";
 
 try {
     // Create connection

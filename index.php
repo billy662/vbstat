@@ -21,11 +21,15 @@
 
 	<style> 
 		body {
-			font-size: 1.3em;
+			font-size: 0.9em;
 		}
 
 		.btn {
 			font-size: 1em;
+		}
+
+		.btnDelete {
+			font-size: 0.8em;
 		}
 		
 		.table-responsive {
