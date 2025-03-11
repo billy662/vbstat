@@ -3,7 +3,8 @@ $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "vbstat";
-/* $servername = "sql103.infinityfree.com";
+/* Production settings - commented out for local development
+$servername = "sql103.infinityfree.com";
 $username = "if0_38216806";
 $password = "f2yRcuXjHgmHgBl";
 $dbname = "if0_38216806_vbstat"; */
@@ -14,7 +15,7 @@ try {
 
     // Set charset to utf8
     if (!$conn->set_charset("utf8")) {
-        printf("Error loading character set utf8: %s\n", $mysqli->error);
+        printf("Error loading character set utf8: %s\n", $conn->error);
     }
 
     // Check connection error
@@ -23,10 +24,5 @@ try {
     }
 } catch (Exception $e) {
     die($e->getMessage());
-}
-
-// Check connection
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
 }
 ?>
