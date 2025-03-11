@@ -26,17 +26,33 @@
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
 	<style> 
+		:root {
+			--secondary-bg: #1e1e1e;
+			--accent-color: #4dabf7;
+			--text-color: #e0e0e0;
+			--player-color: rgb(71, 107, 105);
+			--role-color: #553e85;
+			--inplay-color: #003545;
+			--score-color: rgb(61, 109, 62);
+			--error-color:rgb(153, 49, 51);
+			--border-radius: 16px;
+		}
+
 		body, html { 
 			margin: 0; 
 			padding: 0; 
 			height: 100%; 
 			width: 100%;
-			font-size: 1.5em;
+			font-size: 1.3em; /* Increased base font size for mobile */
+			background-color: var(--primary-bg);
+			color: var(--text-color);
 		} 
 
 		.main-container {
-			padding: 10px; 
+			padding: 10px; /* Reduced padding */
 			color: white;
+			max-width: 1400px;
+			margin: 0 auto;
 		}
 
 		.navbar-brand {
@@ -45,61 +61,140 @@
 
 		.back{
 			font-size: 1.4em;
+			transition: transform 0.2s;
+		}
+
+		.back:hover {
+			transform: translateX(-3px);
 		}
 
 		table{
 			width: 100%;
 			height: 100%;
+			border-collapse: separate;
+			border-spacing: 0;
 		}
 
 		.player-container, .role-container, .in-play-container, .score-container, .error-container{
 			margin-right: 0px;
 			vertical-align: top;
-			border-left: 1px solid white; 
-			border-right: 1px solid white;
-			text-align: -webkit-center;
+			border-left: 1px solid rgba(255, 255, 255, 0.1); 
+			border-right: 1px solid rgba(255, 255, 255, 0.1);
 			text-align: center;
-			padding-left: 0;
-			padding-right: 0;
+			padding: 10px 5px;
 		}
 
 		/* Custom CSS for the scoreboard */
 		#scoreboard {
-            font-size: 3rem;
-            font-weight: bold;
-            text-align: center;
-            background-color: #333;
-            color: #fff;
-            border-radius: 10px;
-            width: 100%;
-        }
-		#scoreboard > span:first-child {
-            color: #0f0;
-        }
-        #scoreboard > span:last-child {
-            color: #f00;
-        }
+			font-size: 3.5rem;
+			font-weight: bold;
+			text-align: center;
+			background-color: var(--secondary-bg);
+			color: #fff;
+			border-radius: var(--border-radius);
+			width: 100%;
+			margin-bottom: 15px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			padding: 15px 0;
+			position: relative;
+			overflow: hidden;
+		}
+
+		#scoreboard::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 3px;
+			background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+			z-index: 1;
+		}
+
+		#scoreboard::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			height: 3px;
+			background: linear-gradient(90deg, rgba(0,0,0,0.3), rgba(0,0,0,0.7), rgba(0,0,0,0.3));
+			z-index: 1;
+		}
+
+		#scoreboard .score-digit {
+			background-color: #000;
+			border-radius: 8px;
+			padding: 5px 15px;
+			margin: 0 2px;
+			box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+			position: relative;
+			overflow: hidden;
+			min-width: 60px;
+			perspective: 200px;
+		}
+
+		#scoreboard .score-digit::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 50%;
+			background: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0));
+			border-bottom: 1px solid rgba(0,0,0,0.4);
+			z-index: 1;
+		}
+
+		#scoreboard .score-separator {
+			display: inline-block;
+			font-size: 3rem;
+			margin: 0 10px;
+			color: #aaa;
+			text-shadow: 0 0 5px rgba(0,0,0,0.5);
+		}
+
+		#scoreboard .home-score .score-digit {
+			background-color: #003300;
+			color: #0f0;
+			text-shadow: 0 0 10px rgba(0,255,0,0.7);
+		}
+
+		#scoreboard .away-score .score-digit {
+			background-color: #330000;
+			color: #f00;
+			text-shadow: 0 0 10px rgba(255,0,0,0.7);
+		}
 
 		.last-action-container{
 			padding-right: 0;
+			margin-bottom: 15px;
 		}
 
 		.last-action-text {
-            background-color: #343a40; /* Dark background color */
-            color: #ffffff; /* White text color */
-            border: 2px solid #ffffff; /* White border */
-            padding: 5px; /* Padding inside the div */
-            border-radius: 5px; /* Rounded corners */
+            background-color: var(--secondary-bg);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: var(--border-radius);
 			text-align: center;
-			font-size: 0.85em;
+			font-size: 0.9em;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
 		#btnUndo{
 			width: 100%;
+			border-radius: var(--border-radius);
+			transition: all 0.3s ease;
+		}
+
+		#btnUndo:hover {
+			background-color: #c82333;
+			transform: scale(1.02);
 		}
 
 		.radio-container {
-			margin: 5px;
+			margin: 3px; /* Reduced margin for tighter spacing */
 		}
 
 		.radio-input {
@@ -110,90 +205,245 @@
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			width: 100px;
-			height: 100px;
-			border: 3px solid #444444; /* Darker border */
-			border-radius: 16px; /* Slightly larger radius */
+			width: 95px; /* Slightly smaller width */
+			height: 95px; /* Slightly smaller height */
+			border: 3px solid rgba(255, 255, 255, 0.1);
+			border-radius: var(--border-radius);
 			cursor: pointer;
 			text-align: center;
-			padding: 10px;
-			transition: all 0.3s ease; /* Transition all properties */
-			background-color: #2d2d2d; /* Dark background for button */
-			color: #e0e0e0; /* Light gray text */
+			padding: 5px; /* Reduced padding */
+			transition: all 0.3s ease;
+			background-color: var(--secondary-bg);
+			color: var(--text-color);
 			font-weight: bold;
-			font-size: 0.8em;
+			font-size: 0.85em; /* Increased font size for better readability on mobile */
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		}
 
 		/* All player radio buttons */
 		.label-pid{
-			background-color :rgb(71, 107, 105);
+			background-color: var(--player-color);
 		}
 
 		/* All role radio buttons */
 		.label-rid{
-			background-color : #553e85;
+			background-color: var(--role-color);
 		}
 
 		/* All in-play radio buttons */
 		.label-in-play{
-			background-color : #003545;
+			background-color: var(--inplay-color);
 		}
 
 		/* All score radio buttons */
 		.label-score{
-			background-color : rgb(61, 109, 62);
+			background-color: var(--score-color);
 		}
 
 		/* All error radio buttons */
 		.label-error{
-			background-color : #ed6363;
+			background-color: var(--error-color);
 		}
 		
 		.radio-input:checked + .radio-label {
-			border-color: #4dabf7; /* Brighter blue for better contrast */
-			background-color: rgba(77, 171, 247, 0.15); /* Subtle blue tint */
-			color: #ffffff; /* Pure white when selected */
+			border-color: var(--accent-color);
+			background-color: rgba(77, 171, 247, 0.15);
+			color: #ffffff;
+			transform: scale(1.05);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 		}
 
 		.radio-label:hover {
-			border-color: #6c757d; /* Medium gray for hover */
-			background-color: #373737; /* Slightly lighter background on hover */
+			border-color: rgba(255, 255, 255, 0.3);
+			background-color: rgba(255, 255, 255, 0.05);
+			transform: translateY(-2px);
 		}
 
 		/* Optional active state */
 		.radio-input:active + .radio-label {
-			transform: scale(0.98); /* Slight press effect */
+			transform: scale(0.98);
 		}
 
 		.radio-container-grid {
 			display: grid;
 			grid-template-columns: repeat(2, 1fr);
-			gap: 0px; /* Adjust the gap between columns as needed */
 			width: fit-content;
+			margin: 0 auto;
 		}
 
 		.radio-container-grid .span-2-columns {
 			grid-column: span 2;
 		}
 
-		.error-container .radio-label,
-		.in-play-container .radio-label{
-			width: 125px;
+		.role-container .radio-label,
+		.score-container .radio-label,
+		.error-container .radio-label {
+			margin-bottom: 3px;
 		}
 
-		/* All disaled raido buttons */
+		.error-container .radio-label,
+		.in-play-container .radio-label{
+			width: 120px;
+		}
+
+		/* All disabled radio buttons */
 		:disabled + .radio-label {
-			background-color: #333;
+			background-color: rgba(51, 51, 51, 0.5);
+			cursor: not-allowed;
+		}
+
+		.disabled-action {
+			opacity: 0.5;
+			cursor: not-allowed;
+			transform: none !important;
+			box-shadow: none !important;
 		}
 
 		.all-actions-container{
 			width: 100%;
+			max-width: 1400px;
+			margin: 0 auto;
+			padding: 0 15px;
 		}
 
 		#allActionsTable{
-			font-size: 0.69em;
+			font-size: 0.75em; /* Increased font size for better readability */
+			border-radius: var(--border-radius);
+			overflow: hidden;
 		}
 
+		.table-dark {
+			background-color: var(--secondary-bg);
+			border-radius: var(--border-radius);
+			overflow: hidden;
+		}
+
+		.table-dark thead th {
+			background-color: rgba(0, 0, 0, 0.2);
+			border-color: rgba(255, 255, 255, 0.1);
+			padding: 12px 8px;
+		}
+
+		.table-dark tbody td {
+			border-color: rgba(255, 255, 255, 0.05);
+		}
+
+		.btn-secondary {
+			border-radius: var(--border-radius);
+			transition: all 0.3s ease;
+		}
+
+		.btn-secondary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+		}
+
+		.toast-container {
+			z-index: 1100;
+		}
+
+		.toast {
+			background-color: var(--secondary-bg);
+			color: var(--text-color);
+			border-radius: var(--border-radius);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		}
+
+		.toast-header {
+			background-color: rgba(0, 0, 0, 0.2);
+			color: var(--text-color);
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		/* Responsive adjustments */
+		@media (max-width: 992px) {
+			body, html {
+				font-size: 1.4em; /* Increased font size for mobile */
+			}
+
+			.radio-label {
+				width: 100px;
+				height: 100px;
+				font-size: 0.85em; /* Increased font size for better readability */
+			}
+
+			.error-container .radio-label,
+			.in-play-container .radio-label {
+				width: 110px;
+			}
+		}
+
+		@media (max-width: 768px) {
+			body, html {
+				font-size: 1.2em; /* Increased font size for mobile */
+			}
+
+			.radio-label {
+				width: 85px;
+				height: 85px;
+				font-size: 0.75em; /* Increased font size for better readability */
+				padding: 4px;
+			}
+
+			.error-container .radio-label,
+			.in-play-container .radio-label {
+				width: 105px;
+			}
+
+			#scoreboard {
+				font-size: 2.8rem; /* Larger scoreboard on mobile */
+			}
+			
+			.radio-container {
+				margin: 2px; /* Even tighter spacing for mobile */
+			}
+			
+			.radio-container-grid {
+				gap: 3px; /* Tighter grid spacing for mobile */
+			}
+		}
+
+		@media (max-width: 576px) {
+			body, html {
+				font-size: 1.1em; /* Adjusted for smallest screens */
+			}
+			
+			.radio-label {
+				width: 80px;
+				height: 80px;
+				font-size: 0.7em;
+				padding: 3px;
+			}
+
+			.error-container .radio-label,
+			.in-play-container .radio-label {
+				width: 95px;
+			}
+
+			#scoreboard {
+				font-size: 2.5rem;
+			}
+			
+			.radio-container {
+				margin: 1px; /* Minimal spacing for smallest screens */
+			}
+			
+			.radio-container-grid {
+				gap: 2px; /* Minimal grid spacing for smallest screens */
+			}
+
+			.table-responsive {
+				overflow-x: auto;
+			}
+			
+			.last-action-text {
+				font-size: 0.95em; /* Larger text for last action on mobile */
+			}
+			
+			#allActionsTable {
+				font-size: 0.8em; /* Larger text for action history on mobile */
+			}
+		}
 	</style>
 
 </head>
@@ -233,10 +483,10 @@
 	</nav>
 
 	<input type="hidden" id="result" value="<?php echo (isset($_GET['result'])) ? $_GET['result'] : '';  ?>">
-	<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11"> 
+	<div class="toast-container position-fixed bottom-0 end-0 p-3"> 
 		<div id="toastBox" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000"> 
 			<div class="toast-header"> 
-				<strong class="me-auto"></strong> 
+				<strong class="me-auto">Notification</strong> 
 				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button> 
 			</div> 
 			<div class="toast-body"> 
@@ -245,51 +495,70 @@
 		</div>
 	</div>
 
-	<div id="scoreboard">
+	<div class="container-fluid py-3">
+		<div id="scoreboard">
 		<?php
 			//Get scoreboard score
 			$scoreboard = getScoreboard($conn, $sid);
-
-			// Format the output
-			echo "<span>{$scoreboard['total_scored']}</span> : <span>{$scoreboard['total_lost']}</span>";
+			
+			// Format the output with individual digits
+			$homeScore = $scoreboard['total_scored'];
+			$awayScore = $scoreboard['total_lost'];
+			
+			// Ensure scores are at least one digit (for 0)
+			$homeDigits = $homeScore > 0 ? str_split($homeScore) : ['0'];
+			$awayDigits = $awayScore > 0 ? str_split($awayScore) : ['0'];
+			
+			echo '<span class="home-score">';
+			foreach ($homeDigits as $digit) {
+				echo '<span class="score-digit">' . $digit . '</span>';
+			}
+			echo '</span>';
+			
+			echo '<span class="score-separator">:</span>';
+			
+			echo '<span class="away-score">';
+			foreach ($awayDigits as $digit) {
+				echo '<span class="score-digit">' . $digit . '</span>';
+			}
+			echo '</span>';
 		?>
 	</div>
 	
-	<form action="statHandler.php" method="GET">
-		<input type="hidden" name="mid" value="<?php echo $mid; ?>">
-		<input type="hidden" name="sid" value="<?php echo $sid; ?>">
-		<input type="hidden" name="action" value="add">
-		<div class="main-container">
-			<div class="last-action-container container-fluid row">
-				<div class="col-9 justify-content-center">
-					<div class="text-center">
-						<!-- Dark themed div with border -->
-						<div class="last-action-text">
-							Last action:
-							<?php
-								$sql = "
-									SELECT 
-										p.pname, 
-										r.rName, 
-										a.aname 
-									FROM 
-										result res
-									INNER JOIN 
-										player p ON res.pid = p.pid 
-									INNER JOIN 
-										action a ON res.aid = a.aid 
-									INNER JOIN
-										role r ON res.rid = r.rid 
-									WHERE 
-										res.resid = (SELECT MAX(resid) FROM result WHERE sid = {$sid}) 
-										AND res.sid = {$sid}
-								";
+		<form action="statHandler.php" method="GET">
+			<input type="hidden" name="mid" value="<?php echo $mid; ?>">
+			<input type="hidden" name="sid" value="<?php echo $sid; ?>">
+			<input type="hidden" name="action" value="add">
+			<div class="main-container">
+				<div class="last-action-container container-fluid row">
+					<div class="col-md-9 col-sm-8 justify-content-center">
+						<div class="text-center">
+							<div class="last-action-text">
+								<i class="fas fa-history me-2"></i> Last action:
+								<?php
+									$sql = "
+										SELECT 
+											p.pname, 
+											r.rName, 
+											a.aname 
+										FROM 
+											result res
+										INNER JOIN 
+											player p ON res.pid = p.pid 
+										INNER JOIN 
+											action a ON res.aid = a.aid 
+										INNER JOIN
+											role r ON res.rid = r.rid 
+										WHERE 
+											res.resid = (SELECT MAX(resid) FROM result WHERE sid = {$sid}) 
+											AND res.sid = {$sid}
+									";
 
 								$isLastActionNull = false;
 								$result = $conn->query($sql);
 								if($result->num_rows > 0){
 									$row = $result->fetch_assoc();
-									echo "{$row['pname']} ({$row['rName']}) - {$row['aname']}";
+									echo "<strong>{$row['pname']}</strong> (<em>{$row['rName']}</em>) - <strong>{$row['aname']}</strong>";
 								}
 								else{
 									$isLastActionNull = true;
@@ -303,8 +572,10 @@
 				<?php
 					if(!$isLastActionNull):
 				?>
-					<div class="col-3">
-						<button type="button" class="btn btn-danger btn-custom bottom px-1" id="btnUndo" style="margin-left: 5px;" onclick="location.href='statHandler.php?action=undo&mid=<?php echo $mid; ?>&sid=<?php echo $sid; ?>'">Undo</button>
+					<div class="col-md-3 col-sm-4">
+						<button type="button" class="btn btn-danger btn-custom" id="btnUndo" onclick="location.href='statHandler.php?action=undo&mid=<?php echo $mid; ?>&sid=<?php echo $sid; ?>'">
+							<i class="fas fa-undo-alt me-1"></i> Undo
+						</button>
 					</div>
 				<?php
 					endif;
@@ -312,120 +583,120 @@
 
 			</div>
 
-			<table class="table table-striped table-dark">
-				<thead>
-					<tr>
-						<th style="width: 25%;">Player</th>
-						<th style="width: 15%;">Role</th>
-						<th style="width: 25%;">In-play</th>
-						<th style="width: 15%;">得分</th>
-						<th style="width: 25%;">失分</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td class="player-container" style="text-align: -webkit-center;">
-							<div class="radio-container-grid">
-								<!-- create cookie that saves the player's last role -->
-								<?php
-									$sql = "SELECT * FROM `player` WHERE `acid` = $acid OR `acid` IS NULL ORDER BY `player`.`pid` ASC";
-									$result = $conn->query($sql);
-									if($result->num_rows > 0){
-										while($row = $result->fetch_assoc()){
-											echo "<div class=\"radio-container\">";
-											echo "<input class=\"radio-input\" type=\"radio\" required name=\"pid\" id=\"player_" . $row["pname"] . "\" value=\"" . $row["pid"] . "\">";
-											echo "<label class=\"radio-label label-pid\" for=\"player_" . $row["pname"] . "\">" . $row["pname"] . "</label>";
-											echo "</div>";
+			<div class="table-responsive">
+				<table class="table table-striped table-dark">
+					<thead>
+						<tr>
+							<th style="width: 25%;">Player</th>
+							<th style="width: 15%;">Role</th>
+							<th style="width: 25%;">In-play</th>
+							<th style="width: 15%;">得分</th>
+							<th style="width: 25%;">失分</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="player-container">
+								<div class="radio-container-grid">
+									<?php
+										$sql = "SELECT * FROM `player` WHERE `acid` = $acid OR `acid` IS NULL ORDER BY `player`.`pid` ASC";
+										$result = $conn->query($sql);
+										if($result->num_rows > 0){
+											while($row = $result->fetch_assoc()){
+												echo "<div class=\"radio-container\">";
+												echo "<input class=\"radio-input\" type=\"radio\" required name=\"pid\" id=\"player_" . $row["pname"] . "\" value=\"" . $row["pid"] . "\">";
+												echo "<label class=\"radio-label label-pid\" for=\"player_" . $row["pname"] . "\">" . $row["pname"] . "</label>";
+												echo "</div>";
+											}
 										}
-									}
-
-								?>
-							</div>
-						</td>
-						<td class="role-container"  style="text-align: -webkit-center;">
-							<div style="width: fit-content;">
-								<?php
-									$sql = "SELECT * FROM `role`";
-									$result = $conn->query($sql);
-									if($result->num_rows > 0){
-										while($row = $result->fetch_assoc()){
-											echo "<div class=\"radio-container\">";
-											echo "<input class=\"radio-input\" type=\"radio\" required name=\"rid\" id=\"role_" . $row["rName"] . "\" value=\"" . $row["rid"] . "\">";
-											echo "<label class=\"radio-label label-rid\" for=\"role_" . $row["rName"] . "\">" . $row["rName"] . "</label>";
-											echo "</div>";
+									?>
+								</div>
+							</td>
+							<td class="role-container">
+								<div style="width: fit-content; margin: 0 auto;">
+									<?php
+										$sql = "SELECT * FROM `role`";
+										$result = $conn->query($sql);
+										if($result->num_rows > 0){
+											while($row = $result->fetch_assoc()){
+												echo "<div class=\"radio-container\">";
+												echo "<input class=\"radio-input\" type=\"radio\" required name=\"rid\" id=\"role_" . $row["rName"] . "\" value=\"" . $row["rid"] . "\">";
+												echo "<label class=\"radio-label label-rid\" for=\"role_" . $row["rName"] . "\">" . $row["rName"] . "</label>";
+												echo "</div>";
+											}
 										}
-									}
-								?>
-							</div>
-						</td>
-						<td class="in-play-container" style="text-align: -webkit-center;">
-							<div class="radio-container-grid">
-								<?php
-									$sql = "SELECT * FROM `action` WHERE `score` = 0 ORDER BY `action`.`sorting` ASC";
-									$result = $conn->query($sql);
-									if($result->num_rows > 0){
-										while($row = $result->fetch_assoc()){
-											$isMultiBlock = $row["aname"] == "多人攔網";
-											$containerClass = $isMultiBlock ? "radio-container span-2-columns" : "radio-container";
-											$labelStyle = $isMultiBlock ? " style=\"width: 100%;\"" : "";
-											
-											echo "<div class=\"{$containerClass}\">";
-											echo "<input class=\"radio-input\" type=\"radio\" required name=\"aid\" 
-												  id=\"in_play_{$row['aname']}\" value=\"{$row['aid']}\">";
-											echo "<label class=\"radio-label label-in-play\" for=\"in_play_{$row['aname']}\"{$labelStyle}>{$row['aname']}</label>";
-											echo "</div>";
+									?>
+								</div>
+							</td>
+							<td class="in-play-container">
+								<div class="radio-container-grid">
+									<?php
+										$sql = "SELECT * FROM `action` WHERE `score` = 0 ORDER BY `action`.`sorting` ASC";
+										$result = $conn->query($sql);
+										if($result->num_rows > 0){
+											while($row = $result->fetch_assoc()){
+												$isMultiBlock = $row["aname"] == "多人攔網";
+												$containerClass = $isMultiBlock ? "radio-container span-2-columns" : "radio-container";
+												$labelStyle = $isMultiBlock ? " style=\"width: 100%;\"" : "";
+												
+												echo "<div class=\"{$containerClass}\">";
+												echo "<input class=\"radio-input\" type=\"radio\" required name=\"aid\" 
+													id=\"in_play_{$row['aname']}\" value=\"{$row['aid']}\">";
+												echo "<label class=\"radio-label label-in-play\" for=\"in_play_{$row['aname']}\"{$labelStyle}>{$row['aname']}</label>";
+												echo "</div>";
+											}
 										}
-									}
-								?>
-							</div>
-						</td>
-						<td class="score-container" style="text-align: -webkit-center;">
-							<div style="width: fit-content;">
-								<?php
-									$sql = "SELECT * FROM `action` WHERE `score` > 0";
-									$result = $conn->query($sql);
-									if($result->num_rows > 0){
-										while($row = $result->fetch_assoc()){
-											echo "<div class=\"radio-container\">";
-											echo "<input class=\"radio-input\" type=\"radio\" name=\"aid\" id=\"score_" . $row["aname"] . "\" value=\"" . $row["aid"] . "\">";
-											echo "<label class=\"radio-label label-score\" for=\"score_" . $row["aname"] . "\">" . $row["aname"] . "</label>";
-											echo "</div>";
+									?>
+								</div>
+							</td>
+							<td class="score-container">
+								<div style="width: fit-content; margin: 0 auto;">
+									<?php
+										$sql = "SELECT * FROM `action` WHERE `score` > 0";
+										$result = $conn->query($sql);
+										if($result->num_rows > 0){
+											while($row = $result->fetch_assoc()){
+												echo "<div class=\"radio-container\">";
+												echo "<input class=\"radio-input\" type=\"radio\" name=\"aid\" id=\"score_" . $row["aname"] . "\" value=\"" . $row["aid"] . "\">";
+												echo "<label class=\"radio-label label-score\" for=\"score_" . $row["aname"] . "\">" . $row["aname"] . "</label>";
+												echo "</div>";
+											}
 										}
-									}
-								?>
-							</div>
-						</td>
-						<td class="error-container" style="text-align: -webkit-center;">
-							<div style="width: fit-content;">
-								<?php
-									$sql = "SELECT * FROM `action` WHERE `score` = -1";
-									$result = $conn->query($sql);
-									if($result->num_rows > 0){
-										while($row = $result->fetch_assoc()){
-											echo "<div class=\"radio-container\">";
-											echo "<input class=\"radio-input\" type=\"radio\" name=\"aid\" id=\"error_" . $row["aname"] . "\" value=\"" . $row["aid"] . "\">";
-											echo "<label class=\"radio-label label-error\" for=\"error_" . $row["aname"] . "\">" . $row["aname"] . "</label>";
-											echo "</div>";
+									?>
+								</div>
+							</td>
+							<td class="error-container">
+								<div style="width: fit-content; margin: 0 auto;">
+									<?php
+										$sql = "SELECT * FROM `action` WHERE `score` = -1";
+										$result = $conn->query($sql);
+										if($result->num_rows > 0){
+											while($row = $result->fetch_assoc()){
+												echo "<div class=\"radio-container\">";
+												echo "<input class=\"radio-input\" type=\"radio\" name=\"aid\" id=\"error_" . $row["aname"] . "\" value=\"" . $row["aid"] . "\">";
+												echo "<label class=\"radio-label label-error\" for=\"error_" . $row["aname"] . "\">" . $row["aname"] . "</label>";
+												echo "</div>";
+											}
 										}
-									}
-								?>
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+									?>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</form>
 
-	<div class="all-actions-container mt-1">
-			<button class="btn btn-secondary mb-2 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#allActionsTable" aria-expanded="false" aria-controls="allActionsTable">
-			Show all actions
+	<div class="all-actions-container mt-3">
+		<button class="btn btn-secondary mb-2 ms-3" type="button" data-bs-toggle="collapse" data-bs-target="#allActionsTable" aria-expanded="false" aria-controls="allActionsTable">
+			<i class="fas fa-history me-1"></i> Show all actions
 		</button>
 		<div class="collapse" id="allActionsTable">
 			<?php
 				$sql = "SELECT 
 						player.pname AS player_name, 
-    					role.rName AS role_name,
+						role.rName AS role_name,
 						action.aname AS action_name
 					FROM 
 						result
@@ -446,31 +717,33 @@
 				$result = $conn->query($sql);
 				$rowsCount = $result->num_rows;
 				
-				echo "<span style=\"color: white\"><b>Total: $rowsCount</b></span><br>";
+				echo "<div class='ms-3 mb-2'><span style=\"color: white\"><b>Total actions: $rowsCount</b></span></div>";
 				
 				if($rowsCount > 0){
 			?>
 			
-			<table class="table table-striped table-dark">
-				<thead>
-					<tr>
-						<th style="width:15%">Player</th>
-						<th style="width:15%">Role</th>
-						<th style="width:70%">Action</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php
-						while($row = $result->fetch_assoc()){
-							echo "<tr>";
-							echo "<td>{$row['player_name']}</td>";
-							echo "<td>{$row['role_name']}</td>";
-							echo "<td>{$row['action_name']}</td>";
-							echo "</tr>";
-						}
-					?>
-				</tbody>
-			</table>
+			<div class="table-responsive mx-3">
+				<table class="table table-striped table-dark">
+					<thead>
+						<tr>
+							<th style="width:15%">Player</th>
+							<th style="width:15%">Role</th>
+							<th style="width:70%">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+							while($row = $result->fetch_assoc()){
+								echo "<tr>";
+								echo "<td>{$row['player_name']}</td>";
+								echo "<td>{$row['role_name']}</td>";
+								echo "<td>" . strip_tags($row['action_name']) . "</td>";
+								echo "</tr>";
+							}
+						?>
+					</tbody>
+				</table>
+			</div>
 			<?php
 				}
 			?>
@@ -480,15 +753,38 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
 			let validPairs = [];
-
+			
 			// Fetch valid pairs from the server
 			fetch('fetch_role_action.php')
-				.then(response => response.json())
-				.then(pairs => {
-					validPairs = pairs; // Store valid pairs globally
-					updateAidRadioButtons(); // Initial update based on the default selected rid
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
 				})
-				.catch(error => console.error('Error fetching valid pairs:', error));
+				.then(data => {
+					if (data.status === 'success') {
+						validPairs = data.data; // Store valid pairs globally
+						
+						// Auto-select player if only one is available
+						const pidInputs = document.querySelectorAll('input[name="pid"]');
+						if (pidInputs.length === 1) {
+							pidInputs[0].checked = true;
+							pidInputs[0].dispatchEvent(new Event('change'));
+						} else if (document.querySelector('input[name="pid"]:checked')) {
+							// If a player is already selected (e.g. by browser cache), trigger the change event
+							document.querySelector('input[name="pid"]:checked').dispatchEvent(new Event('change'));
+						}
+						
+						updateAidRadioButtons(); // Initial update based on the default selected rid
+					} else {
+						console.error('Error fetching valid pairs:', data.message);
+					}
+				})
+				.catch(error => {
+					console.error('Error fetching valid pairs:', error);
+					alert('Failed to load role-action pairs. Please refresh the page.');
+				});
 
 			// Add event listeners to pid buttons
 			const pidInputs = document.querySelectorAll('input[name="pid"]');
@@ -506,17 +802,27 @@
 			const aidInputs = document.querySelectorAll('input[name="aid"]');
 			aidInputs.forEach(aidInput => {
 				aidInput.addEventListener('change', function(event) {
-					//get player id and role id
-					const selectedPid = document.querySelector('input[name="pid"]:checked').value;
-					const selectedRid = document.querySelector('input[name="rid"]:checked').value;
-
+					// Check if required fields are selected
+					const selectedPid = document.querySelector('input[name="pid"]:checked');
+					const selectedRid = document.querySelector('input[name="rid"]:checked');
+					
+					if (!selectedPid || !selectedRid) {
+						event.preventDefault();
+						alert('Please select both player and role before selecting an action.');
+						aidInput.checked = false;
+						return;
+					}
+					
+					const pidValue = selectedPid.value;
+					const ridValue = selectedRid.value;
+					
 					selectedRidPidPair = getSelectedRidPidPair();
 
 					// Check if selectedPid is in the array
 					let pidFound = false;
 					for (let i = 0; i < selectedRidPidPair.length; i++) {
-						if (selectedRidPidPair[i][0] == selectedPid) {
-							selectedRidPidPair[i][1] = selectedRid;
+						if (selectedRidPidPair[i][0] == pidValue) {
+							selectedRidPidPair[i][1] = ridValue;
 							pidFound = true;
 							break;
 						}
@@ -524,65 +830,65 @@
 
 					// If selectedPid is not found, add the pair to the array
 					if (!pidFound) {
-						selectedRidPidPair.push([selectedPid, selectedRid]);
+						selectedRidPidPair.push([pidValue, ridValue]);
 					}
 
 					// Update the cookie with the new array
-					document.cookie = `selectedridpidpair=${JSON.stringify(selectedRidPidPair)}; path=/`;
+					const expiryDate = new Date();
+					expiryDate.setMonth(expiryDate.getMonth() + 1); // Cookie expires in 1 month
+					document.cookie = `selectedridpidpair=${JSON.stringify(selectedRidPidPair)}; path=/; expires=${expiryDate.toUTCString()}`;
 
-					//submit the form
+					// Submit the form
 					document.querySelector('form').submit();
 				});
 			});
 
 			// Function to update rid radio buttons based on the selected pid
 			function updateRidRadioButtons() {
-				const selectedPid = document.querySelector('input[name="pid"]:checked').value;
+				const selectedPid = document.querySelector('input[name="pid"]:checked')?.value;
+				if (!selectedPid) return; // Exit if no pid is selected
+				
 				const ridInputs = document.querySelectorAll('input[name="rid"]');
+				const selectedRidPidPair = getSelectedRidPidPair();
 
-				selectedRidPidPair = getSelectedRidPidPair();
+				// First, apply the basic disabling rules based on selectedPid
+				ridInputs.forEach(ridInput => {
+					const rid = parseInt(ridInput.value);
+					if (selectedPid == 0) {
+						ridInput.disabled = rid !== 7;
+					} else {
+						ridInput.disabled = rid === 7;
+					}
+				});
 
-				// Check if selectedPid is in the array
+				// Then check if selectedPid is in the cookie array
 				let pidFound = false;
 				for (let i = 0; i < selectedRidPidPair.length; i++) {
 					if (selectedRidPidPair[i][0] == selectedPid) {
 						const selectedRid = selectedRidPidPair[i][1];
 						const selectedRidInput = document.querySelector(`input[name="rid"][value="${selectedRid}"]`);
-						if (selectedRidInput) {
+						if (selectedRidInput && !selectedRidInput.disabled) {
 							selectedRidInput.checked = true;
 							selectedRidInput.dispatchEvent(new Event('change'));
+							pidFound = true;
 						}
 						break;
 					}
-				}	
-
-				if (!pidFound) {
-					ridInputs.forEach(ridInput => {
-						const rid = parseInt(ridInput.value);
-						if (selectedPid == 0) {
-							ridInput.disabled = rid !== 7;
-							ridInput.checked = rid === 7;
-							ridInput.dispatchEvent(new Event('change'));
-						} else {
-							ridInput.disabled = rid === 7;
-							if (rid === 7) {
-								ridInput.checked = false;
-								ridInput.dispatchEvent(new Event('change'));
-							}
-						}
-					});
 				}
 
-				// Uncheck all aid buttons if no rid button is checked
-				const aidInputs = document.querySelectorAll('input[name="aid"]');
-				const isRidChecked = Array.from(ridInputs).some(input => input.checked);
-				aidInputs.forEach(aidInput => {
-					if (!isRidChecked) {
-						aidInput.checked = false;
+				if (!pidFound) {
+					// Auto-select first available role if none is selected
+					if (!document.querySelector('input[name="rid"]:checked')) {
+						const firstAvailableRid = document.querySelector('input[name="rid"]:not(:disabled)');
+						if (firstAvailableRid) {
+							firstAvailableRid.checked = true;
+							firstAvailableRid.dispatchEvent(new Event('change'));
+						}
 					}
-				});
+				}
+
+				updateAidRadioButtons();
 			}
-			
 
 			// Function to update aid radio buttons based on the selected rid
 			function updateAidRadioButtons() {
@@ -594,30 +900,48 @@
 					const aid = parseInt(aidInput.value);
 
 					// Disable the aid radio button if no pid radio button is checked
-					aidInput.disabled = !isPidChecked;
+					let isDisabled = !isPidChecked || !selectedRid;
 
 					// Check if the pair (selectedRid, aid) exists in the valid pairs
-					const isValid = validPairs.some(pair => pair.rid == selectedRid && pair.aid == aid);
+					if (!isDisabled) {
+						const isValid = validPairs.some(pair => pair.rid == selectedRid && pair.aid == aid);
+						isDisabled = !isValid;
+					}
 
 					// Enable or disable the aid radio button based on validity
-					aidInput.disabled = !isValid || !isPidChecked;
+					aidInput.disabled = isDisabled;
 
 					// Uncheck the aid radio button if it is disabled
 					if (aidInput.disabled && aidInput.checked) {
 						aidInput.checked = false;
 					}
+					
+					// Update visual state of the label
+					const label = document.querySelector(`label[for="${aidInput.id}"]`);
+					if (label) {
+						if (isDisabled) {
+							label.classList.add('disabled-action');
+						} else {
+							label.classList.remove('disabled-action');
+						}
+					}
 				});
 			}
 
-			
 			// Get cookies and parse the selectedridpidpair cookie
 			function getSelectedRidPidPair() {
 				const cookies = document.cookie.split(';').reduce((acc, cookie) => {
 					const [key, value] = cookie.split('=').map(c => c.trim());
-					acc[key] = value;
+					if (value) acc[key] = value;
 					return acc;
 				}, {});
-				return cookies.selectedridpidpair ? JSON.parse(cookies.selectedridpidpair) : [];
+				
+				try {
+					return cookies.selectedridpidpair ? JSON.parse(cookies.selectedridpidpair) : [];
+				} catch (e) {
+					console.error('Error parsing cookie:', e);
+					return [];
+				}
 			}
 		});
 
@@ -628,12 +952,11 @@
 			}
 		});
 
-
 		const collapseTable = document.getElementById('allActionsTable');
 		const toggleButton = document.querySelector('[data-bs-toggle="collapse"]');
 
 		collapseTable.addEventListener('show.bs.collapse', () => {
-			toggleButton.textContent = 'Hide';
+			toggleButton.textContent = 'Hide all actions';
 		});
 
 		collapseTable.addEventListener('hide.bs.collapse', () => {

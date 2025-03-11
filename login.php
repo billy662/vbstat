@@ -38,15 +38,28 @@
             <b>Login as:</b><br>
         </div>
         <?php
+            // Using prepared statement for security
             $sql = "SELECT * FROM `accounts`";
-            $result = $conn->query($sql);
-            if($result->num_rows > 0){
-                while($row = $result->fetch_assoc()){
-                    echo '<form action="loginHandler.php" method="post">';
-                    echo '<input type="hidden" name="acid" value="' . $row["acid"] . '">';
-                    echo '<button class="btn btn-secondary">' . $row["username"] . '</button><br>';
-                    echo '</form>';
+            $stmt = $conn->prepare($sql);
+            
+            if ($stmt) {
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                if($result->num_rows > 0){
+                    while($row = $result->fetch_assoc()){
+                        echo '<form action="loginHandler.php" method="post">';
+                        echo '<input type="hidden" name="acid" value="' . htmlspecialchars($row["acid"], ENT_QUOTES, 'UTF-8') . '">';
+                        echo '<button class="btn btn-secondary">' . htmlspecialchars($row["username"], ENT_QUOTES, 'UTF-8') . '</button><br>';
+                        echo '</form>';
+                    }
+                } else {
+                    echo '<div class="alert alert-warning text-center">No accounts found</div>';
                 }
+                
+                $stmt->close();
+            } else {
+                echo '<div class="alert alert-danger text-center">Database error</div>';
             }
         ?>
     </div>

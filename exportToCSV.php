@@ -5,21 +5,30 @@ $mid = isset($_GET['mid']) && is_numeric($_GET['mid']) ? $_GET['mid'] : 0;
 if ($mid == 0) 
     die("Error: no match selected");
 
-// Database connection
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
-
 // Get the match info first for the filename
-$sql = "SELECT matches.date, matches.type, team.tname 
+$stmt = $conn->prepare("SELECT matches.date, matches.type, team.tname 
         FROM matches 
         JOIN team ON matches.tid = team.tid 
-        WHERE matches.mid = $mid";
-$result = $conn->query($sql);
+        WHERE matches.mid = ?");
+$stmt->bind_param("i", $mid);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if($result->num_rows === 0) {
+    die("Error: match not found");
+}
+
 $matchInfo = $result->fetch_assoc();
+
+// Sanitize filename components
+$date = preg_replace('/[^a-zA-Z0-9_-]/', '_', $matchInfo['date']);
+$type = preg_replace('/[^a-zA-Z0-9_-]/', '_', $matchInfo['type']);
+$team = preg_replace('/[^a-zA-Z0-9_-]/', '_', $matchInfo['tname']);
+$filename = $date . '_' . $type . '_' . $team . '.csv';
 
 // Set headers in correct order
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename='.$matchInfo['date'].'_'.$matchInfo['type'].'_'.$matchInfo['tname'].'.csv');
-
 
 // Open output stream
 $output = fopen('php://output', 'w');
@@ -80,12 +89,17 @@ while ($row = $result->fetch_assoc()) {
         $match_type = $row['match_type'];
         $team_name = $row['team_name'];
     }
+    
+    // Strip HTML tags from all values in the row
+    foreach ($row as $key => $value) {
+        $row[$key] = strip_tags($value);
+    }
+    
     fputcsv($output, $row);
 }
 
 // Add empty row between tables
 fputcsv($output, []);
-
 
 fclose($output);
 $conn->close();

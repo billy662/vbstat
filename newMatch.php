@@ -2,10 +2,13 @@
 <html lang="en">
 <?php 
 	include 'conn.php';	
+	// Set default date to today
+	$today = date("Y-m-d");
 ?>
 <head>
 	<title>New Match</title>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- Latest compiled and minified CSS -->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -33,6 +36,18 @@
 		.back{
 			font-size: 1.2em;
 		}
+
+		.page-title {
+			color: white;
+			margin: 15px 0;
+			text-align: center;
+		}
+
+		@media (max-width: 768px) {
+			body, html {
+				font-size: 1.2em;
+			}
+		}
 	</style>
 
 </head>
@@ -43,8 +58,9 @@
 	</div>
 	</nav>
     <div class="container-fluid">
-    	<form action="matchHandler.php">
-    		<input name="action" value="add" style="display: none;">
+    	<h2 class="page-title">Add New Match</h2>
+    	<form action="matchHandler.php" method="POST" id="matchForm">
+    		<input name="action" value="add" type="hidden">
 	        <table class="table table-striped table-dark">
 	            <tbody>
 	                <tr>
@@ -52,7 +68,7 @@
 	                    	Date
 	                	</td>
 	                    <td class="col-7">
-	                    	<input type="date" id="date" name="date" required>
+	                    	<input type="date" id="date" name="date" value="<?php echo $today; ?>" required class="form-control">
 	                    </td>
 	                </tr>
 	                <tr>
@@ -60,7 +76,7 @@
 	                    	Type of match
 	                    </td>
 	                    <td>
-	                    	<select name="type" class="form-control">
+	                    	<select name="type" class="form-control" required>
 	                    		<option>Friendly</option>
 	                    		<option>聯賽</option>
 	                    		<option>錦標賽</option>
@@ -75,14 +91,16 @@
 	                    	Opponent
 	                	</td>
 	                    <td>
-							<select name="tid" class="form-control">
+							<select name="tid" class="form-control" required>
 								<?php
-									$sql = "SELECT * FROM `team`";
+									$sql = "SELECT * FROM `team` ORDER BY tname";
 									$result = $conn->query($sql);
 									if($result->num_rows > 0){
 										while($row = $result->fetch_assoc()){
 											echo '<option value="' . $row["tid"] . '">' . $row["tname"] . '</option>';
 										}
+									} else {
+										echo '<option value="">No teams found</option>';
 									}
 								?>
 							</select>
@@ -93,7 +111,7 @@
 							組別
 						</td>
 						<td>
-							<select name="tgrade" class="form-control">
+							<select name="tgrade" class="form-control" required>
 								<option value="甲一">甲一</option>
 								<option value="甲二">甲二</option>
 								<option value="乙組">乙組</option>
@@ -107,12 +125,12 @@
 							Rating
 						</td>
 						<td>
-							<select name="trate" class="form-control">
+							<select name="trate" class="form-control" required>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
                                 <option value="4">4</option>
-                                <option value="5">5</option>
+                                <option value="5" selected>5</option>
                                 <option value="6">6</option>
                                 <option value="7">7</option>
                                 <option value="8">8</option>
@@ -126,23 +144,17 @@
 							YouTube
 						</td>
 						<td>
-							<input type="text" name="youtube" class="form-control">
+							<input type="text" name="youtube" class="form-control" placeholder="Enter full YouTube URL">
 						</td>
 					</tr>
 
 	            </tbody>
 	        </table>
 
-	        <div class="d-grid"> 
-		    	<input type="submit" class="btn btn-success btn-block" value="Add"> 
+	        <div class="d-grid mb-4"> 
+		    	<button type="submit" class="btn btn-success btn-block">Add Match</button> 
 		    </div>
 		</form>
     </div>
-    <script> 
-    	document.getElementById('sets').addEventListener('input', function (e) { 
-    		this.value = this.value.replace(/[^0-9]/g, ''); 
-    	});
-    </script>
 </body>
-
 </html>
