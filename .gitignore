@@ -2,6 +2,8 @@
 .env.php
 .env
 *.env
+conn_publish.php
+conn.php
 
 # Other common files to ignore
 /vendor/
