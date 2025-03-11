@@ -735,8 +735,8 @@
 						<?php
 							while($row = $result->fetch_assoc()){
 								echo "<tr>";
-								echo "<td>{$row['player_name']}</td>";
-								echo "<td>{$row['role_name']}</td>";
+								echo "<td>" . strip_tags($row['player_name']) . "</td>";
+								echo "<td>" . strip_tags($row['role_name']) . "</td>";
 								echo "<td>" . strip_tags($row['action_name']) . "</td>";
 								echo "</tr>";
 							}

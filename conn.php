@@ -1,18 +1,14 @@
 <?php
-// Load environment variables from .env file if it exists
-$envFile = __DIR__ . '/.env.php';
-if (file_exists($envFile)) {
-    include $envFile;
-} else {
-    // Default local development settings
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "vbstat";
-    
-    // Log the missing file for debugging
-    error_log("Warning: Environment file not found at: " . $envFile);
-}
+// Default local development settings
+/* $servername = "sql103.infinityfree.com";
+$username = "if0_38216806";
+$password = "f2yRcuXjHgmHgBl";
+$dbname = "if0_38216806_vbstat"; */
+
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "vbstat";
 
 try {
     // Create connection
