@@ -31,8 +31,14 @@
 			background-color: #1f1f1f;
 		}
 
-		body{
-			font-size: 1em;
+		body {
+			font-size: 1.5em;
+		}
+		
+		@media (max-width: 576px) {
+			body {
+				font-size: 0.9em;
+			}
 		}
 
 		.navbar-brand{

@@ -93,7 +93,6 @@
 			color: #fff;
 			border-radius: var(--border-radius);
 			width: 100%;
-			margin-bottom: 15px;
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 			padding: 15px 0;
 			position: relative;
@@ -422,6 +421,7 @@
 
 			#scoreboard {
 				font-size: 2.5rem;
+				margin-bottom: 0px;
 			}
 			
 			.radio-container {
@@ -495,7 +495,7 @@
 		</div>
 	</div>
 
-	<div class="container-fluid py-3">
+	<div class="container-fluid">
 		<div id="scoreboard">
 		<?php
 			//Get scoreboard score

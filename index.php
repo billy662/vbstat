@@ -21,7 +21,13 @@
 
 	<style> 
 		body {
-			font-size: 0.9em;
+			font-size: 1.5em;
+		}
+		
+		@media (max-width: 576px) {
+			body {
+				font-size: 0.9em;
+			}
 		}
 
 		.btn {
