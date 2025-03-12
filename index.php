@@ -53,6 +53,10 @@
 			display: flex;
 			gap: 5px;
 		}
+
+		.table td {
+			padding: 8px 0px !important;
+		}
 	</style>
 
 </head>

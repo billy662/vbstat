@@ -120,13 +120,13 @@
 	}
 	elseif ($action == "edit") {
 		// Validate required parameters
-		if (!isset($_GET['mid'])) {
+		if (!isset($_POST['mid'])) {
 			header('Location: index.php?error=missing_mid');
 			exit();
 		}
 		
-		$mid = intval($_GET['mid']);
-		$youtube = isset($_GET['youtube']) ? "'" . htmlspecialchars($_GET['youtube'], ENT_QUOTES, 'UTF-8') . "'" : "NULL";
+		$mid = intval($_POST['mid']);
+		$youtube = isset($_POST['youtube']) ? htmlspecialchars($_POST['youtube'], ENT_QUOTES, 'UTF-8') : NULL;
 		
 		try {
 			update($conn, "matches", "`youtube`", $youtube, "`matches`.`mid`", $mid, "set.php?mid=$mid");

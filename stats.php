@@ -557,9 +557,9 @@
 								$isLastActionNull = false;
 								$result = $conn->query($sql);
 								if($result->num_rows > 0){
-									$row = $result->fetch_assoc();
-									echo "<strong>{$row['pname']}</strong> (<em>{$row['rName']}</em>) - <strong>{$row['aname']}</strong>";
-								}
+                                    $row = $result->fetch_assoc();
+                                    echo "<strong>" . strip_tags($row['pname']) . "</strong> (<em>" . strip_tags($row['rName']) . "</em>) - <strong>" . strip_tags($row['aname']) . "</strong>";
+                                }
 								else{
 									$isLastActionNull = true;
 									echo "N/A";

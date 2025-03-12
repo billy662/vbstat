@@ -206,7 +206,7 @@
 			<div id="edit-match-form" class="collapse">
 				<div class="edit-match-container d-flex align-items-center"> 
 					<input type="text" name="youtube" class="form-control flex-grow-1 me-2" value="<?php echo htmlspecialchars($youtube); ?>">
-					<input type="submit" id="add-set" class="btn btn-outline-success" value="Ok">
+					<input type="submit" id="edit-match-submit" class="btn btn-outline-success" value="Ok">
 					<input type="hidden" name="mid" value="<?php echo $mid; ?>">
 				</div>
 			</div>
@@ -287,13 +287,13 @@
 		<button type="button" class="btn btn-success btn-block" data-bs-toggle="collapse" data-bs-target="#new-set-form">Add Set <?php echo $setNo + 1; ?></button>
 	</div>
 
-    <form action="setHandler.php" method="get">
-		<input type="hidden" name="action" value="add">
-		<div id="new-set-form" class="collapse">
-			<div class="new-set-container"> 
-				<div class="points-label text-white me-3">
-					<label for="points">Points:</label>
-				</div>
+    <form action="setHandler.php" method="post">
+        <input type="hidden" name="action" value="add">
+        <div id="new-set-form" class="collapse">
+            <div class="new-set-container"> 
+                <div class="points-label text-white me-3">
+                    <label for="points">Points:</label>
+                </div>
                 <select name="points" id="points" class="form-control me-3">
                     <option value="25">25</option>
                     <option value="21">21</option>
@@ -303,8 +303,8 @@
                 <input type="submit" id="add-set" class="btn btn-outline-success" value="Add">
                 <input type="hidden" name="mid" value="<?php echo $mid; ?>">
                 <input type="hidden" name="setNo" value="<?php echo $setNo + 1; ?>">
-			</div>
-		</div>
+            </div>
+        </div>
     </form>
 
     <!-- Modal -->
@@ -350,7 +350,14 @@
 			});
 			
 			$('#btnConfirm').click(function() {
-				window.location.href = 'setHandler.php?action=delete&sid=' + sid + '&mid=' + <?php echo $mid; ?>;
+				// Create a form dynamically
+				var form = $('<form action="setHandler.php" method="post">' +
+					'<input type="hidden" name="action" value="delete">' +
+					'<input type="hidden" name="sid" value="' + sid + '">' +
+					'<input type="hidden" name="mid" value="' + <?php echo $mid; ?> + '">' +
+					'</form>');
+				$('body').append(form);
+				form.submit();
 			});
 			
 			$('.export-btn').click(function() {
