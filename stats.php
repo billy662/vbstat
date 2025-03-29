@@ -858,6 +858,17 @@
 						ridInput.disabled = rid !== 7;
 					} else {
 						ridInput.disabled = rid === 7;
+						ridInput.checked = false;
+					}
+
+					// Update visual state of the label
+					const label = document.querySelector(`label[for="${ridInput.id}"]`);
+					if (label) {
+						if (ridInput.disabled) {
+							label.classList.add('disabled-action');
+						} else {
+							label.classList.remove('disabled-action');
+						}
 					}
 				});
 
