@@ -856,6 +856,7 @@
 					const rid = parseInt(ridInput.value);
 					if (selectedPid == 0) {
 						ridInput.disabled = rid !== 7;
+						ridInput.checked = true;
 					} else {
 						ridInput.disabled = rid === 7;
 						ridInput.checked = false;
