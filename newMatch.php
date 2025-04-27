@@ -2,8 +2,11 @@
 <html lang="en">
 <?php 
 	include 'conn.php';	
+	include 'functions.php';
 	// Set default date to today
 	$today = date("Y-m-d");
+
+	$acid = getAcid();
 ?>
 <head>
 	<title>New Match</title>
@@ -80,7 +83,7 @@
 	                    <td>
 							<select name="tid" class="form-control" required>
 								<?php
-									$sql = "SELECT * FROM `team` ORDER BY tname";
+									$sql = "SELECT * FROM `team` WHERE `acid` = $acid ORDER BY tname";
 									$result = $conn->query($sql);
 									if($result->num_rows > 0){
 										while($row = $result->fetch_assoc()){

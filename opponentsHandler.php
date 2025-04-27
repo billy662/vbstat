@@ -9,6 +9,8 @@
 	if (session_status() === PHP_SESSION_NONE) {
 		session_start();
 	}
+
+	$acid = getAcid();
 	
 	// Check if the request is POST or GET
 	$requestMethod = $_SERVER['REQUEST_METHOD'];
@@ -47,8 +49,8 @@
 				}
 				
 				// Insert the new team
-				$stmt = $conn->prepare("INSERT INTO team (tname) VALUES (?)");
-				$stmt->bind_param("s", $tname);
+				$stmt = $conn->prepare("INSERT INTO team (tname, acid) VALUES (?, ?)");
+				$stmt->bind_param("si", $tname, $acid); // Assuming acid is integer
 				
 				if ($stmt->execute()) {
 					$_SESSION['success_message'] = "Team '$tname' added successfully";
@@ -94,8 +96,8 @@
 				}
 				
 				// Insert the new team with details
-				$stmt = $conn->prepare("INSERT INTO team (tname, trate, tgrade, tnotes) VALUES (?, ?, ?, ?)");
-				$stmt->bind_param("siss", $tname, $trate, $tgrade, $tnotes);
+				$stmt = $conn->prepare("INSERT INTO team (tname, trate, tgrade, tnotes, acid) VALUES (?, ?, ?, ?, ?)");
+				$stmt->bind_param("sissi", $tname, $trate, $tgrade, $tnotes, $acid); // Assuming acid is integer
 				
 				if ($stmt->execute()) {
 					$_SESSION['success_message'] = "Team '$tname' added successfully with details";
@@ -183,8 +185,8 @@
 				}
 				
 				// Update the team
-				$stmt = $conn->prepare("UPDATE team SET tname = ?, trate = ?, tgrade = ?, tnotes = ? WHERE tid = ?");
-				$stmt->bind_param("sissi", $tname, $trate, $tgrade, $tnotes, $tid);
+				$stmt = $conn->prepare("UPDATE team SET tname = ?, trate = ?, tgrade = ?, tnotes = ?, acid = ? WHERE tid = ?");
+				$stmt->bind_param("sissii", $tname, $trate, $tgrade, $tnotes, $acid, $tid); // Assuming acid is integer
 				
 				if ($stmt->execute()) {
 					$_SESSION['success_message'] = "Team '$tname' updated successfully";

@@ -6,6 +6,8 @@
 	if (session_status() === PHP_SESSION_NONE) {
 		session_start();
 	}
+	
+	$acid = getAcid();
 ?>
 
 <!DOCTYPE html>
@@ -135,9 +137,12 @@
 			</thead>
 			<tbody>
 				<?php
-					$sql = "SELECT * FROM `team` ORDER BY `tname` ASC";
-					$result = $conn->query($sql);
-					if($result && $result->num_rows > 0){
+					$stmt = $conn->prepare("SELECT * FROM `team` WHERE `acid` = ? ORDER BY `tname` ASC");
+					$stmt->bind_param("i", $acid);
+					$stmt->execute();
+					$result = $stmt->get_result();
+
+					if($result->num_rows > 0){
 						while($row = $result->fetch_assoc()){
 							echo "<tr>"; 
 							echo "<td class='team-name'>" . htmlspecialchars($row["tname"]) . "</td>"; 
@@ -161,6 +166,7 @@
 					else { 
 						echo "<tr><td colspan='2' class='no-records'>No opponents found</td></tr>";
 					}
+				$stmt->close();
 				?>
 			</tbody>
 		</table>
