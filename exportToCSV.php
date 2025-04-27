@@ -147,16 +147,7 @@ foreach ($fields as $field) {
 }
 fputcsv($output, $headers);
 
-// Write data rows, if it is the first row, get match date, match type and team name
-$isFirstRow = true;
 while ($row = $result->fetch_assoc()) {
-    if ($isFirstRow) {
-        $isFirstRow = false;
-        $match_date = $row['match_date'];
-        $match_type = $row['match_type'];
-        $team_name = $row['team_name'];
-    }
-    
     // Strip HTML tags from all values in the row
     foreach ($row as $key => $value) {
         $row[$key] = strip_tags($value);
