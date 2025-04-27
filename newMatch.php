@@ -39,6 +39,14 @@
 		.back{
 			font-size: 1.2em;
 		}
+
+		.rating-reference{
+			border: 1px solid white; 
+			padding: 10px; 
+			margin: 15px 0px; 
+			color: white;
+			font-size: 0.85em;
+		}
 	</style>
 
 </head>
@@ -145,6 +153,19 @@
 		    	<button type="submit" class="btn btn-success btn-block">Add Match</button> 
 		    </div>
 		</form>
+		<div class="rating-reference">
+			Rating reference: <br>
+			1 丙組下游 <br>
+			2 丙組中下游 雨葉 <br>
+			3 丙組中游 FaiKui <br>
+			4 丙組中上游 聯合 <br>
+			5 丙組上游 SA <br>
+			6 乙組中下 青華 <br>
+			7 乙組中上 仁青 <br>
+			8 甲二下至中上 力臻 <br>
+			9 甲二上至甲一下 國際 <br>
+			10 甲一 中上 青龍
+		</div>
     </div>
 </body>
 </html>
