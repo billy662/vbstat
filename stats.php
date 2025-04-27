@@ -652,7 +652,7 @@
 							<td class="score-container">
 								<div style="width: fit-content; margin: 0 auto;">
 									<?php
-										$sql = "SELECT * FROM `action` WHERE `score` > 0";
+										$sql = "SELECT * FROM `action` WHERE `score` > 0  ORDER BY `action`.`sorting` ASC";
 										$result = $conn->query($sql);
 										if($result->num_rows > 0){
 											while($row = $result->fetch_assoc()){
@@ -668,7 +668,7 @@
 							<td class="error-container">
 								<div style="width: fit-content; margin: 0 auto;">
 									<?php
-										$sql = "SELECT * FROM `action` WHERE `score` = -1";
+										$sql = "SELECT * FROM `action` WHERE `score` = -1  ORDER BY `action`.`sorting` ASC";
 										$result = $conn->query($sql);
 										if($result->num_rows > 0){
 											while($row = $result->fetch_assoc()){

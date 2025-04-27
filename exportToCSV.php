@@ -67,6 +67,8 @@ $sql = "
         scoreboard ON result.resid = scoreboard.resid
     WHERE 
         matches.mid = $mid
+    ORDER BY 
+    	result.resid ASC
     ";
 
 // Get table data
