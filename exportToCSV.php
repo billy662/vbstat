@@ -80,6 +80,7 @@ $sql = "
         JOIN role ro ON r.rid = ro.rid
         -- OPTIONAL: Add a WHERE clause here to filter for specific matches, sets, teams, etc.
         -- Example: WHERE m.mid = 57 AND s.setNo = 1
+        WHERE m.mid = $mid
     )
     -- Final SELECT statement to arrange columns and calculate O, P, Q
     SELECT
