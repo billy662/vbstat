@@ -420,10 +420,10 @@ function renderDaWuRow(string $label, array $stats, bool $include_extra = false)
     echo "<td class='numeric negative'>" . calculate_percentage($stats['失分'], $stats['total']) . "%</td>";
 
     if ($include_extra) {
-        $mugan_count = $stats['無跟'] ?? 0; // Handle if '無跟' key doesn't exist (though it should for 'cover')
-        $mugan_perc = calculate_percentage($mugan_count, $stats['total']);
+        $mugan_count = $stats['無跟'] ?? ""; // Handle if '無跟' key doesn't exist (though it should for 'cover')
+        $mugan_perc = is_numeric($mugan_count) ? calculate_percentage($mugan_count, $stats['total']) : "";
         echo "<td class='numeric'>{$mugan_count}</td>";
-        echo "<td class='numeric negative'>{$mugan_perc}%</td>";
+        echo "<td class='numeric negative'>" . ($mugan_perc !== "" ? "{$mugan_perc}%" : "") . "</td>";
     }
     echo "</tr>";
 }
