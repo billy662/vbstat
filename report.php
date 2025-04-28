@@ -163,9 +163,47 @@ $conn->close();
     <style>
         /* ... CSS remains the same ... */
          body { padding: 20px; } h2, h3 { margin-top: 20px; border-bottom: 1px solid #ccc; padding-bottom: 5px; } .table th { white-space: nowrap; } .table td.numeric, .table th.numeric { text-align: right; } .positive { color: green; } .negative { color: red; } .neutral { color: grey; } th, td { word-wrap: break-word; white-space: normal !important; } .table th, .table td { vertical-align: middle; } .filter-group { margin-bottom: 15px; } .filter-group-label { font-weight: bold; margin-right: 10px; display: block; margin-bottom: 5px; } .filter-group .btn-group { display: flex; flex-wrap: wrap; gap: 5px; } .filter-group .btn { margin-bottom: 5px; } h4 { margin-top: 15px; font-weight: bold; color: #333; }
+
+        /* Add navbar styles */
+        .navbar {
+            padding: 0px;
+        }
+
+        .navbar-brand {
+            font-size: inherit;
+        }
+
+        .back {
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+        
+        .back:hover {
+            transform: scale(1.1);
+        }
+
+        /* Adjust body padding for navbar */
+        body {
+            padding: 5px;
+        }
     </style>
 </head>
 <body class="bg-dark text-light">
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="container-fluid">
+            <a class="back navbar-brand" href="set.php?mid=<?php echo $match_id; ?>">⬅</a>
+            <a class="navbar-brand ms-auto">
+                <?php
+                    if($match_info) {
+                        echo htmlspecialchars($match_info['date']) . " " . 
+                             htmlspecialchars($match_info['type']) . " VS " . 
+                             htmlspecialchars($match_info['opponent_team']);
+                    }
+                ?>
+            </a>
+        </div>
+    </nav>
+
     <div class="container">
         <h1 class="text-light">Match Report</h1>
         <!-- Match Details -->

@@ -113,6 +113,10 @@
 			align-items: center;
 		} 
 
+		#btnAddSet{
+			margin-bottom: 10px;
+		}
+
 		#add-set{ 
 			width: 30%; 
 			transition: all 0.3s ease;
@@ -290,7 +294,8 @@
             }
 		?>
 		
-		<button type="button" class="btn btn-success btn-block" data-bs-toggle="collapse" data-bs-target="#new-set-form">Add Set <?php echo $setNo + 1; ?></button>
+		<button type="button" class="btn btn-success btn-block" id="btnAddSet" data-bs-toggle="collapse" data-bs-target="#new-set-form">Add Set <?php echo $setNo + 1; ?></button>
+		<a href="report.php?mid=<?php echo $mid; ?>" class="btn btn-light btn-block">Show Statistics</a>
 	</div>
 
     <form action="setHandler.php" method="post">
