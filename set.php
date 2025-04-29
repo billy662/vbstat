@@ -52,13 +52,9 @@
 			font-size: inherit;
 		}
 
-		table .btn{
-			font-size: 0.8em;
-		}
-
 		.btnDelete{
-			font-size: smaller;
 			transition: all 0.3s ease;
+			padding: 5px 8px;
 		}
 		
 		.btnDelete:hover {
@@ -95,7 +91,7 @@
             cursor: pointer;
             gap: 8px;
 			margin-bottom: 10px;
-			padding: 10px 15px;
+			padding: 7px 15px;
 			transition: all 0.3s ease;
 			font-weight: bold;
         }
@@ -106,10 +102,12 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
+		#new-set-form{
+			margin-bottom: 10px;
+		}
 		.new-set-container { 
 			width: 100%; 
 			display: flex; 
-			margin-top: 10px;
 			align-items: center;
 		} 
 
@@ -277,6 +275,25 @@
             }
         ?>
 		
+		<button type="button" class="btn btn-success btn-block" id="btnAddSet" data-bs-toggle="collapse" data-bs-target="#new-set-form">Add Set <?php echo $setNo + 1; ?></button>
+		<form action="setHandler.php" method="post" id="new-set-form" class="collapse">
+			<input type="hidden" name="action" value="add">
+			<div class="new-set-container"> 
+				<div class="points-label text-white me-3">
+					<label for="points">Points:</label>
+				</div>
+				<select name="points" id="points" class="form-control me-3">
+					<option value="25">25</option>
+					<option value="21">21</option>
+					<option value="15">15</option>
+					<option value="11">11</option>
+				</select>
+				<input type="submit" id="add-set" class="btn btn-outline-success" value="Add">
+				<input type="hidden" name="mid" value="<?php echo $mid; ?>">
+				<input type="hidden" name="setNo" value="<?php echo $setNo + 1; ?>">
+			</div>
+		</form>
+
 		<?php
 			// Show the export button only when there is data in the result table for this match
             $stmt = $conn->prepare("SELECT * FROM `result` JOIN `sets` ON `result`.`sid` = `sets`.`sid` JOIN `matches` ON `sets`.`mid` = `matches`.`mid` WHERE `matches`.`mid` = ?");
@@ -294,29 +311,9 @@
             }
 		?>
 		
-		<button type="button" class="btn btn-success btn-block" id="btnAddSet" data-bs-toggle="collapse" data-bs-target="#new-set-form">Add Set <?php echo $setNo + 1; ?></button>
 		<a href="report.php?mid=<?php echo $mid; ?>" class="btn btn-light btn-block">Show Statistics</a>
 	</div>
 
-    <form action="setHandler.php" method="post">
-        <input type="hidden" name="action" value="add">
-        <div id="new-set-form" class="collapse">
-            <div class="new-set-container"> 
-                <div class="points-label text-white me-3">
-                    <label for="points">Points:</label>
-                </div>
-                <select name="points" id="points" class="form-control me-3">
-                    <option value="25">25</option>
-                    <option value="21">21</option>
-                    <option value="15">15</option>
-                    <option value="11">11</option>
-                </select>
-                <input type="submit" id="add-set" class="btn btn-outline-success" value="Add">
-                <input type="hidden" name="mid" value="<?php echo $mid; ?>">
-                <input type="hidden" name="setNo" value="<?php echo $setNo + 1; ?>">
-            </div>
-        </div>
-    </form>
 
     <!-- Modal -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
