@@ -434,7 +434,7 @@ function renderDaWuRow(string $label, array $stats, bool $include_extra = false)
  * @param array $stats The dawu_stats array.
  */
 function renderDaWuStatsTable(array $stats): void {
-    echo '<h3 class="text-light">到位 / 唔到位</h3>';
+    echo '<h3 class="text-light">一傳</h3>';
     echo '<div class="table-responsive">';
     echo '<table class="table table-dark table-striped table-bordered table-sm">';
     echo '<thead><tr>';
