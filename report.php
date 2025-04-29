@@ -581,7 +581,7 @@ function renderDaWuStatsTable(array $stats): void {
     echo '<table class="table table-dark table-striped table-bordered table-sm">';
     echo '<thead><tr>';
     echo '<th>Action Type</th>';
-    echo '<th class="numeric">Total Attempts</th>';
+    echo '<th class="numeric">Attempts</th>';
     echo '<th class="numeric">到位</th><th class="numeric">到位 %</th>';
     echo '<th class="numeric">唔到位</th><th class="numeric">唔到位 %</th>';
     echo '<th class="numeric">失分</th><th class="numeric">失分 %</th>';
@@ -768,7 +768,7 @@ function renderPlayerBlockPerformanceTable(array $stats): void {
     echo '<div class="table-responsive">';
     echo '<table class="table table-dark table-striped table-bordered table-sm">';
     // Including 'Attempts' and 'Effective' for more context, though primary focus is Points vs Errors
-    echo '<thead><tr><th>Player</th><th class="numeric">Attempts</th><th class="numeric">Points</th><th class="numeric">Errors</th><th class="numeric">Effective</th></tr></thead>';
+    echo '<thead><tr><th>Player</th><th class="numeric">Attempts</th><th class="numeric">得分</th><th class="numeric">失分</th><th class="numeric">有效攔網</th></tr></thead>';
     echo '<tbody>';
     if (empty($stats)) {
         echo '<tr><td colspan="5">No block data matching filters.</td></tr>';
@@ -908,7 +908,7 @@ $conn->close();
         /* Table styles */
         .table th { white-space: nowrap; }
         .table td.numeric, .table th.numeric { text-align: right; }
-        .table th, .table td { vertical-align: middle; word-wrap: break-word; white-space: normal !important; }
+        .table th, .table td { vertical-align: middle; word-wrap: break-word;}
         .table-dark { --bs-table-color: #dee2e6; --bs-table-bg: #212529; --bs-table-border-color: #373b3e; --bs-table-striped-bg: #2c3034; --bs-table-striped-color: #dee2e6; --bs-table-active-bg: #373b3e; --bs-table-active-color: #fff; --bs-table-hover-bg: #323539; --bs-table-hover-color: #fff; }
 
         /* Text colors */
@@ -956,7 +956,7 @@ $conn->close();
             text-align: center;
         }
         .table-responsive {
-            overflow: hidden;
+            overflow-x: auto;
             transition: max-height 0.5s ease-out, padding-top 0.5s ease-out, padding-bottom 0.5s ease-out;
             max-height: 2000px; /* Set a large max-height for expanded state */
             /* Add padding for smoother visual transition */
