@@ -957,11 +957,12 @@ $conn->close();
         }
         .table-responsive {
             overflow-x: auto;
+            overflow-y: hidden; /* Prevent vertical scrollbars */
             transition: max-height 0.5s ease-out, padding-top 0.5s ease-out, padding-bottom 0.5s ease-out;
             max-height: 2000px; /* Set a large max-height for expanded state */
             /* Add padding for smoother visual transition */
-            padding-top: 10px;
-            padding-bottom: 10px;
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
             box-sizing: border-box; /* Include padding in height calculation */
         }
         .table-responsive.collapsed {
