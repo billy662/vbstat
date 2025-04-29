@@ -91,7 +91,7 @@
 	</div>
 	</nav>
 		<div class="notice-container text-danger">
-			注意:己有紀錄的不可刪除
+			注意:已有紀錄的不可刪除
 		</div>
 
 		<?php

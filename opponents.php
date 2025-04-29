@@ -108,7 +108,7 @@
 	
 	<div class="container-fluid mt-3">
 		<div class="notice-container text-danger mb-2">
-			注意:己有紀錄的不可刪除
+			注意:已有紀錄的不可刪除
 		</div>
 		
 		<?php
