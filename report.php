@@ -214,7 +214,12 @@ function processResults(array $results, array $actions_by_category): array {
         ],
         'score_by_player' => [],
         'score_by_role' => [],
-        'detailed_category_stats' => []
+        'detailed_category_stats' => [],
+        'player_attack_stats' => [], // Added for Attack Efficiency
+        'player_serve_stats' => [],  // Added for Serve Performance
+        'player_block_stats' => [],  // Added for Block Performance
+        'team_scoring_sources' => ['total_scored' => 0, 'attack_kills' => 0, 'block_points' => 0, 'aces' => 0, 'opponent_errors' => 0],
+        'team_error_sources' => ['total_lost' => 0, 'attack_errors' => 0, 'serve_errors' => 0, 'reception_errors' => 0, 'block_errors' => 0, 'setting_errors' => 0, 'cover_errors' => 0, 'other_errors' => 0]
     ];
 
     // DaWu Maps
@@ -303,9 +308,130 @@ function processResults(array $results, array $actions_by_category): array {
                 // $stats['detailed_category_stats'][$category]['actions'][$cleaned_aname] = ['count' => 1, 'aid' => $aid];
             }
         }
+
+        // --- Player Specific Stats Calculation (Inside Loop) ---
+        if ($player !== '對方<br>球員') { // Exclude opponent
+            // Initialize player arrays if not set
+            if (!isset($stats['player_attack_stats'][$player])) {
+                $stats['player_attack_stats'][$player] = ['kills' => 0, 'errors' => 0, 'attempts' => 0];
+            }
+            if (!isset($stats['player_serve_stats'][$player])) {
+                $stats['player_serve_stats'][$player] = ['aces' => 0, 'errors' => 0, 'attempts' => 0];
+            }
+            if (!isset($stats['player_block_stats'][$player])) {
+                $stats['player_block_stats'][$player] = ['points' => 0, 'errors' => 0, 'effective' => 0, 'attempts' => 0]; // Added attempts for context
+            }
+
+            // Attack Stats
+            if ($category === '進攻') {
+                if (in_array($aid, [1, 2, 3])) { // Kills: 殺波, Tip波, 二段
+                    $stats['player_attack_stats'][$player]['kills']++;
+                    $stats['player_attack_stats'][$player]['attempts']++;
+                } elseif ($aid === 5) { // Error: 進攻失分
+                    $stats['player_attack_stats'][$player]['errors']++;
+                    $stats['player_attack_stats'][$player]['attempts']++;
+                } elseif (in_array($aid, [6, 34])) { // Other attempts: 破壞性進攻, 無效進攻
+                    $stats['player_attack_stats'][$player]['attempts']++;
+                }
+            }
+
+            // Serve Stats
+            if ($category === '發球') {
+                if ($aid === 21) { // Ace
+                    $stats['player_serve_stats'][$player]['aces']++;
+                    $stats['player_serve_stats'][$player]['attempts']++;
+                } elseif ($aid === 23) { // Error: 發球失分
+                    $stats['player_serve_stats'][$player]['errors']++;
+                    $stats['player_serve_stats'][$player]['attempts']++;
+                } elseif (in_array($aid, [22, 30])) { // Other attempts: 發球, 發球破壞一傳
+                    $stats['player_serve_stats'][$player]['attempts']++;
+                }
+            }
+
+            // Block Stats
+            if ($category === '攔網') {
+                 if ($aid === 7) { // Point: 攔網+
+                    $stats['player_block_stats'][$player]['points']++;
+                    $stats['player_block_stats'][$player]['attempts']++;
+                 } elseif ($aid === 9) { // Error: 攔網-
+                    $stats['player_block_stats'][$player]['errors']++;
+                    $stats['player_block_stats'][$player]['attempts']++;
+                 } elseif ($aid === 10) { // Effective: 有效攔網
+                    $stats['player_block_stats'][$player]['effective']++;
+                    $stats['player_block_stats'][$player]['attempts']++;
+                 } elseif (in_array($aid, [8, 11, 33])) { // Other block involvement: 多人攔網, 無效攔網 etc. - count as attempt? Debatable, let's count for now.
+                    $stats['player_block_stats'][$player]['attempts']++;
+                 }
+            }
+        } // End player specific stats
+
+        // --- Team Stats Calculation (Inside Loop) ---
+        if ($score > 0) {
+            $stats['team_scoring_sources']['total_scored'] += $score;
+            if (in_array($aid, [1, 2, 3])) { // Attack Kills
+                $stats['team_scoring_sources']['attack_kills'] += $score;
+            } elseif ($aid === 7) { // Block Points (assuming aid 7 is the primary block point)
+                 // Handle potential half points from multi-blocks (aid 8) if needed - currently only counting aid 7
+                 $stats['team_scoring_sources']['block_points'] += $score;
+            } elseif ($aid === 21) { // Aces
+                $stats['team_scoring_sources']['aces'] += $score;
+            } elseif ($aid === 29) { // Opponent Error
+                $stats['team_scoring_sources']['opponent_errors'] += $score;
+            }
+            // Note: Points from actions like '一傳過網' (aid 12) might need specific categorization if they should be counted separately. Currently implicitly included via score > 0.
+        } elseif ($score < 0) {
+            $stats['team_error_sources']['total_lost'] += abs($score); // Use absolute value for lost points count
+            if ($aid === 5) { // Attack Error
+                $stats['team_error_sources']['attack_errors'] += abs($score);
+            } elseif ($aid === 23) { // Serve Error
+                $stats['team_error_sources']['serve_errors'] += abs($score);
+            } elseif (in_array($aid, [15, 16, 39, 40])) { // Reception Errors (接發失分, 守殺失分, 守tip失分, Free波失分)
+                $stats['team_error_sources']['reception_errors'] += abs($score);
+            } elseif ($aid === 9) { // Block Error
+                $stats['team_error_sources']['block_errors'] += abs($score);
+            } elseif ($aid === 27) { // Setting Error
+                $stats['team_error_sources']['setting_errors'] += abs($score);
+            } elseif (in_array($aid, [19, 20])) { // Cover Errors (Cover失分, 無跟cover)
+                $stats['team_error_sources']['cover_errors'] += abs($score);
+            } elseif ($aid === 28) { // Other Error
+                $stats['team_error_sources']['other_errors'] += abs($score);
+            }
+            // Note: Need to ensure all negative score actions are categorized.
+        }
+
+    } // End main processing loop
+
+    // --- Post-processing Calculations (Efficiency, Rates, Percentages) --- (Outside Loop)
+    foreach ($stats['player_attack_stats'] as $player => &$p_stats) {
+        $p_stats['efficiency'] = ($p_stats['attempts'] > 0)
+            ? round((($p_stats['kills'] - $p_stats['errors']) / $p_stats['attempts']) * 100, 1)
+            : 0;
+    }
+    unset($p_stats); // Unset reference
+
+    foreach ($stats['player_serve_stats'] as $player => &$p_stats) {
+        $p_stats['ace_rate'] = calculate_percentage($p_stats['aces'], $p_stats['attempts']);
+        $p_stats['error_rate'] = calculate_percentage($p_stats['errors'], $p_stats['attempts']);
+    }
+    unset($p_stats);
+
+    // Calculate Team Stat Percentages
+    foreach ($stats['team_scoring_sources'] as $key => $value) {
+        if ($key !== 'total_scored' && $stats['team_scoring_sources']['total_scored'] > 0) {
+            $stats['team_scoring_sources'][$key . '_perc'] = calculate_percentage($value, $stats['team_scoring_sources']['total_scored']);
+        } elseif ($key !== 'total_scored') {
+             $stats['team_scoring_sources'][$key . '_perc'] = 0;
+        }
+    }
+     foreach ($stats['team_error_sources'] as $key => $value) {
+        if ($key !== 'total_lost' && $stats['team_error_sources']['total_lost'] > 0) {
+            $stats['team_error_sources'][$key . '_perc'] = calculate_percentage($value, $stats['team_error_sources']['total_lost']);
+        } elseif ($key !== 'total_lost') {
+             $stats['team_error_sources'][$key . '_perc'] = 0;
+        }
     }
 
-    // --- Sorting ---
+    // --- Sorting --- (Outside Loop, After Calculations)
     ksort($stats['action_category_stats']); // Sort categories alphabetically
     uksort($stats['score_by_player'], function($a, $b) use ($stats) { // Sort players by net score desc
         return $stats['score_by_player'][$b]['net_score'] <=> $stats['score_by_player'][$a]['net_score'];
@@ -313,9 +439,25 @@ function processResults(array $results, array $actions_by_category): array {
     uksort($stats['score_by_role'], function($a, $b) use ($stats) { // Sort roles by net score desc
         return $stats['score_by_role'][$b]['net_score'] <=> $stats['score_by_role'][$a]['net_score'];
     });
+    // Sort player performance stats (e.g., attack efficiency desc)
+    uksort($stats['player_attack_stats'], function($a, $b) use ($stats) {
+        return $stats['player_attack_stats'][$b]['efficiency'] <=> $stats['player_attack_stats'][$a]['efficiency'];
+    });
+     uksort($stats['player_serve_stats'], function($a, $b) use ($stats) {
+        // Sort by Ace Rate desc, then Error Rate asc as tie-breaker
+        $ace_diff = $stats['player_serve_stats'][$b]['ace_rate'] <=> $stats['player_serve_stats'][$a]['ace_rate'];
+        if ($ace_diff !== 0) return $ace_diff;
+        return $stats['player_serve_stats'][$a]['error_rate'] <=> $stats['player_serve_stats'][$b]['error_rate'];
+    });
+     uksort($stats['player_block_stats'], function($a, $b) use ($stats) {
+        // Sort by Block Points desc, then Block Errors asc as tie-breaker
+        $point_diff = $stats['player_block_stats'][$b]['points'] <=> $stats['player_block_stats'][$a]['points'];
+        if ($point_diff !== 0) return $point_diff;
+        return $stats['player_block_stats'][$a]['errors'] <=> $stats['player_block_stats'][$b]['errors'];
+    });
 
     return $stats;
-}
+} // End function processResults
 
 
 // =============================================================================
@@ -434,7 +576,7 @@ function renderDaWuRow(string $label, array $stats, bool $include_extra = false)
  * @param array $stats The dawu_stats array.
  */
 function renderDaWuStatsTable(array $stats): void {
-    echo '<h3 class="text-light">一傳</h3>';
+    echo '<h4 class="text-light">一傳</h4>';
     echo '<div class="table-responsive">';
     echo '<table class="table table-dark table-striped table-bordered table-sm">';
     echo '<thead><tr>';
@@ -476,15 +618,18 @@ function renderDaWuStatsTable(array $stats): void {
 }
 
 /**
- * Renders the tables for detailed action breakdowns (攔網, 發球, 進攻).
+ * Renders the DaWu table and detailed action breakdowns (攔網, 發球, 進攻).
  *
+ * @param array $dawu_stats The dawu_stats array.
  * @param array $detailed_stats The detailed_category_stats array.
  * @param string $filter_category The currently selected category filter.
  */
-function renderDetailedCategoryStatsTables(array $detailed_stats, string $filter_category): void {
+function renderDetailedCategoryStatsTables(array $dawu_stats, array $detailed_stats, string $filter_category): void {
     echo '<h3 class="text-light">Detailed Action Breakdowns</h3>';
+    renderDaWuStatsTable($dawu_stats); // Render DaWu table first under this heading
     $found_data = false;
 
+    // Now render the individual category tables
     foreach ($detailed_stats as $category_name => $category_data) {
         if ($category_data['total_count'] > 0) {
             $found_data = true;
@@ -553,6 +698,147 @@ function renderScoreTable(string $title, array $stats, string $entity_label): vo
     echo '</tbody></table></div>';
 }
 
+/**
+ * Renders the Player Attack Efficiency table.
+ *
+ * @param array $stats The player_attack_stats array.
+ */
+function renderPlayerAttackEfficiencyTable(array $stats): void {
+    echo '<h3 class="text-light">Player Attack Efficiency</h3>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-dark table-striped table-bordered table-sm">';
+    echo '<thead><tr><th>Player</th><th class="numeric">Attempts</th><th class="numeric">Kills</th><th class="numeric">Errors</th><th class="numeric">Efficiency %</th></tr></thead>';
+    echo '<tbody>';
+    if (empty($stats)) {
+        echo '<tr><td colspan="5">No attack data matching filters.</td></tr>';
+    } else {
+        // Sorting is done in processResults
+        foreach ($stats as $player => $data) {
+            if ($data['attempts'] == 0) continue; // Skip players with no attempts
+            $eff_class = ($data['efficiency'] > 0) ? 'positive' : (($data['efficiency'] < 0) ? 'negative' : 'neutral');
+            echo '<tr>';
+            echo '<td>' . $player . '</td>'; // Already escaped
+            echo '<td class="numeric">' . $data['attempts'] . '</td>';
+            echo '<td class="numeric positive">' . $data['kills'] . '</td>';
+            echo '<td class="numeric negative">' . $data['errors'] . '</td>';
+            echo '<td class="numeric ' . $eff_class . '">' . number_format($data['efficiency'], 1) . '%</td>';
+            echo '</tr>';
+        }
+    }
+    echo '</tbody></table></div>';
+}
+
+/**
+ * Renders the Player Serve Performance table.
+ *
+ * @param array $stats The player_serve_stats array.
+ */
+function renderPlayerServePerformanceTable(array $stats): void {
+    echo '<h3 class="text-light">Player Serve Performance</h3>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-dark table-striped table-bordered table-sm">';
+    echo '<thead><tr><th>Player</th><th class="numeric">Attempts</th><th class="numeric">Aces</th><th class="numeric">Ace %</th><th class="numeric">Errors</th><th class="numeric">Error %</th></tr></thead>';
+    echo '<tbody>';
+    if (empty($stats)) {
+        echo '<tr><td colspan="6">No serve data matching filters.</td></tr>';
+    } else {
+        // Sorting is done in processResults
+        foreach ($stats as $player => $data) {
+             if ($data['attempts'] == 0) continue; // Skip players with no attempts
+            echo '<tr>';
+            echo '<td>' . $player . '</td>'; // Already escaped
+            echo '<td class="numeric">' . $data['attempts'] . '</td>';
+            echo '<td class="numeric positive">' . $data['aces'] . '</td>';
+            echo '<td class="numeric positive">' . number_format($data['ace_rate'], 1) . '%</td>';
+            echo '<td class="numeric negative">' . $data['errors'] . '</td>';
+            echo '<td class="numeric negative">' . number_format($data['error_rate'], 1) . '%</td>';
+            echo '</tr>';
+        }
+    }
+    echo '</tbody></table></div>';
+}
+
+/**
+ * Renders the Player Block Performance table.
+ *
+ * @param array $stats The player_block_stats array.
+ */
+function renderPlayerBlockPerformanceTable(array $stats): void {
+    echo '<h3 class="text-light">Player Block Performance</h3>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-dark table-striped table-bordered table-sm">';
+    // Including 'Attempts' and 'Effective' for more context, though primary focus is Points vs Errors
+    echo '<thead><tr><th>Player</th><th class="numeric">Attempts</th><th class="numeric">Points</th><th class="numeric">Errors</th><th class="numeric">Effective</th></tr></thead>';
+    echo '<tbody>';
+    if (empty($stats)) {
+        echo '<tr><td colspan="5">No block data matching filters.</td></tr>';
+    } else {
+        // Sorting is done in processResults
+        foreach ($stats as $player => $data) {
+             if ($data['attempts'] == 0) continue; // Skip players with no attempts
+            echo '<tr>';
+            echo '<td>' . $player . '</td>'; // Already escaped
+            echo '<td class="numeric">' . $data['attempts'] . '</td>';
+            echo '<td class="numeric positive">' . $data['points'] . '</td>';
+            echo '<td class="numeric negative">' . $data['errors'] . '</td>';
+            echo '<td class="numeric neutral">' . $data['effective'] . '</td>'; // Effective blocks are neutral score-wise
+            echo '</tr>';
+        }
+    }
+    echo '</tbody></table></div>';
+}
+
+/**
+ * Renders the Team Point Scoring Sources table.
+ *
+ * @param array $stats The team_scoring_sources array.
+ */
+function renderTeamScoringSourceTable(array $stats): void {
+    echo '<h3 class="text-light">Team Point Scoring Sources</h3>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-dark table-striped table-bordered table-sm">';
+    echo '<thead><tr><th>Source</th><th class="numeric">Points</th><th class="numeric">Percentage</th></tr></thead>';
+    echo '<tbody>';
+    if ($stats['total_scored'] == 0) {
+        echo '<tr><td colspan="3">No points scored matching filters.</td></tr>';
+    } else {
+        echo '<tr><td>Attack Kills</td><td class="numeric">' . number_format($stats['attack_kills'], 1) . '</td><td class="numeric">' . number_format($stats['attack_kills_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Block Points</td><td class="numeric">' . number_format($stats['block_points'], 1) . '</td><td class="numeric">' . number_format($stats['block_points_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Service Aces</td><td class="numeric">' . number_format($stats['aces'], 1) . '</td><td class="numeric">' . number_format($stats['aces_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Opponent Errors</td><td class="numeric">' . number_format($stats['opponent_errors'], 1) . '</td><td class="numeric">' . number_format($stats['opponent_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        // Add other sources if tracked separately
+        echo '<tr class="table-group-divider"><th>Total Scored</th><td class="numeric"><strong>' . number_format($stats['total_scored'], 1) . '</strong></td><td class="numeric"><strong>100.0%</strong></td></tr>';
+    }
+    echo '</tbody></table></div>';
+}
+
+/**
+ * Renders the Team Error Sources table.
+ *
+ * @param array $stats The team_error_sources array.
+ */
+function renderTeamErrorSourceTable(array $stats): void {
+    echo '<h3 class="text-light">Team Error Sources (Points Lost)</h3>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-dark table-striped table-bordered table-sm">';
+    echo '<thead><tr><th>Source</th><th class="numeric">Points Lost</th><th class="numeric">Percentage</th></tr></thead>';
+    echo '<tbody>';
+     if ($stats['total_lost'] == 0) {
+        echo '<tr><td colspan="3">No errors recorded matching filters.</td></tr>';
+    } else {
+        // Reception errors should be displayed first as they are most critical
+        echo '<tr><td>Reception Errors</td><td class="numeric">' . number_format($stats['reception_errors'], 1) . '</td><td class="numeric">' . number_format($stats['reception_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Attack Errors</td><td class="numeric">' . number_format($stats['attack_errors'], 1) . '</td><td class="numeric">' . number_format($stats['attack_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Serve Errors</td><td class="numeric">' . number_format($stats['serve_errors'], 1) . '</td><td class="numeric">' . number_format($stats['serve_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Block Errors</td><td class="numeric">' . number_format($stats['block_errors'], 1) . '</td><td class="numeric">' . number_format($stats['block_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Setting Errors</td><td class="numeric">' . number_format($stats['setting_errors'], 1) . '</td><td class="numeric">' . number_format($stats['setting_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Cover Errors</td><td class="numeric">' . number_format($stats['cover_errors'], 1) . '</td><td class="numeric">' . number_format($stats['cover_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr><td>Other Errors</td><td class="numeric">' . number_format($stats['other_errors'], 1) . '</td><td class="numeric">' . number_format($stats['other_errors_perc'] ?? 0, 1) . '%</td></tr>';
+        echo '<tr class="table-group-divider"><th>Total Lost</th><td class="numeric"><strong>' . number_format($stats['total_lost'], 1) . '</strong></td><td class="numeric"><strong>100.0%</strong></td></tr>';
+    }
+    echo '</tbody></table></div>';
+}
+
 
 // =============================================================================
 // Main Script Logic
@@ -591,6 +877,12 @@ $dawu_stats = $processed_stats['dawu_stats'];
 $detailed_category_stats = $processed_stats['detailed_category_stats'];
 $score_by_player = $processed_stats['score_by_player'];
 $score_by_role = $processed_stats['score_by_role'];
+$player_attack_stats = $processed_stats['player_attack_stats'];
+$player_serve_stats = $processed_stats['player_serve_stats'];
+$player_block_stats = $processed_stats['player_block_stats'];
+$team_scoring_sources = $processed_stats['team_scoring_sources'];
+$team_error_sources = $processed_stats['team_error_sources'];
+
 
 // --- Close Database Connection ---
 $conn->close();
@@ -648,6 +940,43 @@ $conn->close();
         .btn-check:active+.btn-outline-info, .btn-check:checked+.btn-outline-info, .btn-outline-info.active, .btn-outline-info.dropdown-toggle.show, .btn-outline-info:active { color: #000; background-color: #0dcaf0; border-color: #0dcaf0; }
         .btn-check:active+.btn-outline-light, .btn-check:checked+.btn-outline-light, .btn-outline-light.active, .btn-outline-light.dropdown-toggle.show, .btn-outline-light:active { color: #000; background-color: #f8f9fa; border-color: #f8f9fa; }
 
+        /* Styles for collapsible tables */
+        h3, h4 {
+            cursor: pointer;
+            user-select: none; /* Prevent text selection on click */
+            position: relative; /* Needed for absolute positioning of indicator if desired */
+        }
+        .toggle-indicator {
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            font-size: 1.1em;
+            width: 20px; /* Ensure consistent spacing */
+            text-align: center;
+        }
+        .table-responsive {
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding-top 0.5s ease-out, padding-bottom 0.5s ease-out;
+            max-height: 2000px; /* Set a large max-height for expanded state */
+            /* Add padding for smoother visual transition */
+            padding-top: 10px;
+            padding-bottom: 10px;
+            box-sizing: border-box; /* Include padding in height calculation */
+        }
+        .table-responsive.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            /* Optionally add border collapse if needed */
+             border-top: none;
+             border-bottom: none;
+             margin-top: -1px; /* Adjust to prevent double borders if needed */
+        }
+        /* Ensure tables inside don't have excessive margin causing jumpiness */
+        .table-responsive > .table {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -689,16 +1018,98 @@ $conn->close();
 
         <?php renderActionCategoryStatsTable($action_category_stats); ?>
 
-        <?php renderDaWuStatsTable($dawu_stats); ?>
+        <?php renderTeamScoringSourceTable($team_scoring_sources); ?>
 
-        <?php renderDetailedCategoryStatsTables($detailed_category_stats, $filter_category); ?>
+        <?php renderTeamErrorSourceTable($team_error_sources); ?>
+
+        <?php renderDetailedCategoryStatsTables($dawu_stats, $detailed_category_stats, $filter_category); ?>
 
         <?php renderScoreTable('Score Contribution by Player', $score_by_player, 'Player'); ?>
 
         <?php renderScoreTable('Score Contribution by Role', $score_by_role, 'Role'); ?>
 
+        <hr class="border-secondary">
+        <h2 class="text-light">Player Performance Metrics</h2>
+
+        <?php renderPlayerAttackEfficiencyTable($player_attack_stats); ?>
+
+        <?php renderPlayerServePerformanceTable($player_serve_stats); ?>
+
+        <?php renderPlayerBlockPerformanceTable($player_block_stats); ?>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const headers = document.querySelectorAll('h3, h4');
+
+            headers.forEach(header => {
+                const tableContainer = header.nextElementSibling;
+
+                if (tableContainer && tableContainer.classList.contains('table-responsive')) {
+                    // Add indicator
+                    const indicator = document.createElement('span');
+                    indicator.classList.add('toggle-indicator');
+                    // Assume initially expanded unless it already has 'collapsed' class (e.g., from server-side logic later)
+                    indicator.textContent = tableContainer.classList.contains('collapsed') ? '[+]' : '[-]';
+                    header.insertBefore(indicator, header.firstChild);
+
+                    // Set initial max-height for animation if not collapsed
+                    if (!tableContainer.classList.contains('collapsed')) {
+                         // Calculate initial height based on content
+                         // Use scrollHeight of the table itself for better accuracy
+                         const tableElement = tableContainer.querySelector('table');
+                         if (tableElement) {
+                            // Add padding values to scrollHeight
+                            const style = window.getComputedStyle(tableContainer);
+                            const paddingTop = parseFloat(style.paddingTop);
+                            const paddingBottom = parseFloat(style.paddingBottom);
+                            tableContainer.style.maxHeight = (tableElement.scrollHeight + paddingTop + paddingBottom) + 'px';
+                         } else {
+                             tableContainer.style.maxHeight = tableContainer.scrollHeight + 'px'; // Fallback
+                         }
+                    } else {
+                         tableContainer.style.maxHeight = '0px'; // Ensure collapsed starts at 0
+                    }
+
+
+                    header.addEventListener('click', function() {
+                        const isCollapsed = tableContainer.classList.contains('collapsed');
+
+                        if (isCollapsed) {
+                            // Expand
+                            tableContainer.classList.remove('collapsed');
+                            indicator.textContent = '[-]';
+                            // Calculate height based on content
+                            const tableElement = tableContainer.querySelector('table');
+                             if (tableElement) {
+                                const style = window.getComputedStyle(tableContainer);
+                                const paddingTop = parseFloat(style.paddingTop);
+                                const paddingBottom = parseFloat(style.paddingBottom);
+                                tableContainer.style.maxHeight = (tableElement.scrollHeight + paddingTop + paddingBottom) + 'px';
+                             } else {
+                                 tableContainer.style.maxHeight = tableContainer.scrollHeight + 'px'; // Fallback
+                             }
+                        } else {
+                            // Collapse
+                            // Set max-height to current height first to allow transition FROM current height
+                            tableContainer.style.maxHeight = tableContainer.scrollHeight + 'px';
+                            // Force reflow/repaint before setting to 0 - crucial for transition out
+                            void tableContainer.offsetWidth;
+                            // Now set to 0 to trigger collapse animation
+                            tableContainer.classList.add('collapsed');
+                            indicator.textContent = '[+]';
+                            tableContainer.style.maxHeight = '0px';
+                        }
+                    });
+                } else {
+                    // No table follows, remove pointer cursor and padding
+                    header.style.cursor = 'default';
+                    header.style.paddingLeft = '0px'; // Remove padding if no indicator
+                }
+            });
+        });
+    </script>
 </body>
 </html>
