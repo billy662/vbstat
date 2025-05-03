@@ -536,44 +536,22 @@
 							<div class="last-action-text">
 								<i class="fas fa-history me-2"></i> Last action:
 								<?php
-									$sql = "
-										SELECT 
-											p.pname, 
-											r.rName, 
-											a.aname 
-										FROM 
-											result res
-										INNER JOIN 
-											player p ON res.pid = p.pid 
-										INNER JOIN 
-											action a ON res.aid = a.aid 
-										INNER JOIN
-											role r ON res.rid = r.rid 
-										WHERE 
-											res.resid = (SELECT MAX(resid) FROM result WHERE sid = {$sid}) 
-											AND res.sid = {$sid}
-									";
+									$lastAction = getLastAction($conn, $sid);
+									$isLastActionNull = ($lastAction === null);
 
-								$isLastActionNull = false;
-								$result = $conn->query($sql);
-								if($result->num_rows > 0){
-                                    $row = $result->fetch_assoc();
-                                    echo "<strong>" . strip_tags($row['pname']) . "</strong> (<em>" . strip_tags($row['rName']) . "</em>) - <strong>" . strip_tags($row['aname']) . "</strong>";
-                                }
-								else{
-									$isLastActionNull = true;
-									echo "N/A";
-								}
-							?>
+									if (!$isLastActionNull) {
+										echo "<strong>" . strip_tags($lastAction['pname']) . "</strong> (<em>" . strip_tags($lastAction['rName']) . "</em>) - <strong>" . strip_tags($lastAction['aname']) . "</strong>";
+									} else {
+										echo "N/A";
+									}
+								?>
+							</div>
 						</div>
 					</div>
-				</div>
-				
-				<?php
-					if(!$isLastActionNull):
-				?>
-					<div class="col-md-3 col-sm-4">
-						<button type="button" class="btn btn-danger btn-custom" id="btnUndo" onclick="location.href='statHandler.php?action=undo&mid=<?php echo $mid; ?>&sid=<?php echo $sid; ?>'">
+					
+					<?php if (!$isLastActionNull): ?>
+						<div class="col-md-3 col-sm-4">
+							<button type="button" class="btn btn-danger btn-custom" id="btnUndo" onclick="location.href='statHandler.php?action=undo&mid=<?php echo $mid; ?>&sid=<?php echo $sid; ?>'">
 							<i class="fas fa-undo-alt me-1"></i> Undo
 						</button>
 					</div>

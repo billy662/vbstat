@@ -144,4 +144,52 @@
 			exit();
 		}
 	}
+
+	function getLastAction($conn, $sid) {
+		$sql = "
+			SELECT 
+				res.pid,
+				res.rid,
+				res.aid,
+				p.pname, 
+				r.rName, 
+				a.aname 
+			FROM 
+				result res
+			INNER JOIN 
+				player p ON res.pid = p.pid 
+			INNER JOIN 
+				action a ON res.aid = a.aid 
+			INNER JOIN
+				role r ON res.rid = r.rid 
+			WHERE 
+				res.sid = ?
+			ORDER BY 
+				res.resid DESC
+			LIMIT 1
+		";
+
+		$stmt = $conn->prepare($sql);
+		if (!$stmt) {
+			// Handle prepare error, e.g., log it or return an error indicator
+			error_log("Prepare failed: (" . $conn->errno . ") " . $conn->error);
+			return null; 
+		}
+		
+		$stmt->bind_param("i", $sid);
+		
+		if (!$stmt->execute()) {
+			// Handle execute error
+			error_log("Execute failed: (" . $stmt->errno . ") " . $stmt->error);
+			$stmt->close();
+			return null;
+		}
+		
+		$result = $stmt->get_result();
+		$lastAction = $result->fetch_assoc(); // Fetch the single row or null
+		
+		$stmt->close();
+		
+		return $lastAction; // Returns the associative array or null if no rows found
+	}
 ?>
