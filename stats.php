@@ -675,7 +675,8 @@
 				$sql = "SELECT 
 						player.pname AS player_name, 
 						role.rName AS role_name,
-						action.aname AS action_name
+						action.aname AS action_name,
+						result.resid AS resid
 					FROM 
 						result
 					JOIN 
@@ -706,7 +707,8 @@
 						<tr>
 							<th style="width:15%">Player</th>
 							<th style="width:15%">Role</th>
-							<th style="width:70%">Action</th>
+							<th style="width:60%">Action</th>
+							<th style="width:10%"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -716,6 +718,7 @@
 								echo "<td>" . strip_tags($row['player_name']) . "</td>";
 								echo "<td>" . strip_tags($row['role_name']) . "</td>";
 								echo "<td>" . strip_tags($row['action_name']) . "</td>";
+								echo "<td><button type=\"button\" class=\"btn btn-outline-danger btn-sm btnDelete\" value=\"" . $row["resid"] . "\" data-bs-toggle=\"modal\" data-bs-target=\"#confirmDeleteModal\" data-bs-backdrop=\"false\"><i class=\"fa-regular fa-trash-can\"></i></button></td>";
 								echo "</tr>";
 							}
 						?>
@@ -942,16 +945,154 @@
 			}
 		});
 
+		$(document).ready(function(){ 
+			// Handle delete button click
+			$('.btnDelete').on('click', function() {
+				var resid = $(this).val();
+				$('#confirmDeleteButton').data('resid', resid); // Store resid in data attribute of modal confirm button
+			});
+
+			// Handle modal confirm delete button click
+			$('#confirmDeleteButton').on('click', function() {
+				var resid = $(this).data('resid');
+				var mid = <?php echo json_encode($mid); ?>;
+				var sid = <?php echo json_encode($sid); ?>;
+				window.location.href = `statHandler.php?action=delete&mid=${mid}&sid=${sid}&resid=${resid}`;
+			});
+		});
+
 		const collapseTable = document.getElementById('allActionsTable');
 		const toggleButton = document.querySelector('[data-bs-toggle="collapse"]');
 
 		collapseTable.addEventListener('show.bs.collapse', () => {
-			toggleButton.textContent = 'Hide all actions';
+			toggleButton.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide all actions';
 		});
 
 		collapseTable.addEventListener('hide.bs.collapse', () => {
-			toggleButton.textContent = 'Show all actions';
+			toggleButton.innerHTML = '<i class="fas fa-history me-1"></i> Show all actions';
 		});
+
+		// --- Real-time Scoreboard Update Script ---
+		const scoreboardDiv = document.getElementById('scoreboard');
+		const homeScoreContainer = scoreboardDiv.querySelector('.home-score');
+		const awayScoreContainer = scoreboardDiv.querySelector('.away-score');
+		// The separator is part of the initial HTML, we'll clear and rebuild around it or clone it.
+		
+		let currentSidForPolling = <?php echo json_encode($sid); ?>;
+		let currentHomeScoreDisplay = -1; // Initialize to ensure first update
+		let currentAwayScoreDisplay = -1;
+
+		function updateScoreboardHTML(homeScore, awayScore) {
+			// Only update if scores have actually changed
+			if (homeScore === currentHomeScoreDisplay && awayScore === currentAwayScoreDisplay) {
+				return;
+			}
+
+			currentHomeScoreDisplay = homeScore;
+			currentAwayScoreDisplay = awayScore;
+
+			// Clear existing digits
+			homeScoreContainer.innerHTML = '';
+			awayScoreContainer.innerHTML = ''; // This will also remove the separator if it's inside
+
+			const homeDigits = String(homeScore).split('');
+			const awayDigits = String(awayScore).split('');
+
+			homeDigits.forEach(digit => {
+				const digitSpan = document.createElement('span');
+				digitSpan.className = 'score-digit';
+				digitSpan.textContent = digit;
+				homeScoreContainer.appendChild(digitSpan);
+			});
+			
+			// Re-add separator (assuming it's simple text or a span)
+			const separatorSpan = document.createElement('span');
+			separatorSpan.className = 'score-separator';
+			separatorSpan.textContent = ':';
+
+			awayDigits.forEach(digit => {
+				const digitSpan = document.createElement('span');
+				digitSpan.className = 'score-digit';
+				digitSpan.textContent = digit;
+				awayScoreContainer.appendChild(digitSpan);
+			});
+		}
+
+		async function fetchAndUpdateScore() {
+			if (currentSidForPolling === -1) {
+				console.log("Set ID not available for polling.");
+				return;
+			}
+			try {
+				const response = await fetch(`api_get_score.php?sid=${currentSidForPolling}`);
+				if (!response.ok) {
+					console.error('Failed to fetch score from API:', response.statusText);
+					// Optionally, display a small error indicator on the scoreboard itself
+					return;
+				}
+				const scores = await response.json();
+
+				if (scores.error) {
+					console.error('API returned an error:', scores.error);
+					// Potentially update scoreboard to show an error state or "--:--"
+                    if (currentHomeScoreDisplay !== null || currentAwayScoreDisplay !== null) { // Avoid continuous updates if error persists
+                        // updateScoreboardHTML('--', '--'); // Example error display
+                        currentHomeScoreDisplay = null; // Mark as error state
+                        currentAwayScoreDisplay = null;
+                    }
+					return;
+				}
+				
+				// Ensure scores are numbers
+				const homeScore = parseInt(scores.total_scored, 10);
+				const awayScore = parseInt(scores.total_lost, 10);
+
+				if (!isNaN(homeScore) && !isNaN(awayScore)) {
+					updateScoreboardHTML(homeScore, awayScore);
+				} else {
+					console.error('Received non-numeric scores from API:', scores);
+				}
+
+			} catch (error) {
+				console.error('Error fetching or processing score:', error);
+				// Optionally, display a network error indicator on the scoreboard
+			}
+		}
+
+		// Fetch score initially and then every 3 seconds
+		document.addEventListener('DOMContentLoaded', () => {
+			// Initial fetch might be slightly delayed if DOMContentLoaded is used here
+			// and the scoreboard is already populated by PHP.
+			// The first call to fetchAndUpdateScore will correct it if needed.
+			if (scoreboardDiv && homeScoreContainer && awayScoreContainer) {
+				fetchAndUpdateScore(); // Initial fetch
+				setInterval(fetchAndUpdateScore, 3000); // Poll every 3 seconds
+			} else {
+				console.error("Scoreboard elements not found for real-time updates.");
+			}
+		});
+		// --- End Real-time Scoreboard Update Script ---
+
 	</script>
+
+	<!-- Confirm Delete Modal -->
+	<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" style="max-width: 800px; width: 90%;">
+			<div class="modal-content bg-dark text-white">
+				<div class="modal-header">
+					<h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete</h5>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					Are you sure you want to delete this action? <br/>
+					This <span class="fw-bold">CANNOT</span> be undone.
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
 </html>

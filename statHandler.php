@@ -164,9 +164,111 @@ if ($action == "add") {
             redirectToStats($mid, $sid, "Error: could not undo - " . $e->getMessage());
         }
     }
+} elseif ($action == "delete") {
+    // Validate required parameter for delete action
+    if (!isset($_GET['resid']) || !is_numeric($_GET['resid'])) {
+        redirectToStats($mid, $sid, "Error: Invalid resid for delete");
+    }
+
+    $resid_to_delete = intval($_GET['resid']);
+
+    // Begin transaction
+    $conn->begin_transaction();
+
+    try {
+        // 1. Fetch necessary info BEFORE deleting
+        $stmt_info = $conn->prepare("
+            SELECT r.sid, r.aid, a.score, sb.sbid
+            FROM result r
+            JOIN action a ON r.aid = a.aid
+            LEFT JOIN scoreboard sb ON r.resid = sb.resid
+            WHERE r.resid = ?
+        ");
+        $stmt_info->bind_param("i", $resid_to_delete);
+        $stmt_info->execute();
+        $info_result = $stmt_info->get_result();
+
+        if ($info_result->num_rows == 0) {
+            throw new Exception("Action to delete (resid: $resid_to_delete) not found in result table.");
+        }
+        $action_info = $info_result->fetch_assoc();
+        $stmt_info->close();
+
+        $sid_of_deleted_action = intval($action_info['sid']);
+        $score_value = floatval($action_info['score']);
+        $sbid_of_deleted_scoreboard_entry = $action_info['sbid'] ? intval($action_info['sbid']) : null;
+
+        if ($sbid_of_deleted_scoreboard_entry === null) {
+             // This case implies the result existed but its scoreboard entry was missing.
+             // This could happen if a previous operation failed or if not all results get scoreboard entries.
+             // For robustness, if we can't find the sbid, we might have to fall back to rebuilding the whole set,
+             // or log an error. For now, we'll throw an exception if sbid is crucial and missing.
+             // Given that 'add' always creates a scoreboard entry, this should ideally not be null.
+            throw new Exception("Scoreboard entry for resid $resid_to_delete not found. Cannot adjust subsequent scores accurately without it.");
+        }
+
+        // 2. Calculate score change caused by the deleted action
+        $delta_scored_change = 0.0;
+        $delta_lost_change = 0.0;
+
+        if ($score_value == -1) {
+            $delta_lost_change = 1.0;
+        } elseif ($score_value > 0) { // Handles 1.0 and 0.5
+            $delta_scored_change = $score_value;
+        }
+        // If score_value is 0, deltas remain 0, no score adjustment needed for subsequent entries.
+
+        // 3. Delete from scoreboard for the specific resid
+        $stmt_del_sb = $conn->prepare("DELETE FROM `scoreboard` WHERE `resid` = ?");
+        $stmt_del_sb->bind_param("i", $resid_to_delete);
+        $stmt_del_sb->execute(); // Execute and proceed; subsequent logic handles score adjustments
+        $stmt_del_sb->close();
+
+        // 4. Delete from result
+        $stmt_del_res = $conn->prepare("DELETE FROM `result` WHERE `resid` = ?");
+        $stmt_del_res->bind_param("i", $resid_to_delete);
+        if (!$stmt_del_res->execute()) {
+            throw new Exception("Could not delete action (resid: $resid_to_delete) from result table.");
+        }
+        if ($stmt_del_res->affected_rows == 0) {
+            // This means the $stmt_info found it, but it was gone by the time we tried to delete.
+            // This could indicate a race condition or prior error.
+            throw new Exception("No action found with resid $resid_to_delete to delete from result table (was present moments ago).");
+        }
+        $stmt_del_res->close();
+
+        // 5. Update subsequent scoreboard entries if there was a score impact
+        if ($delta_scored_change != 0.0 || $delta_lost_change != 0.0) {
+            $stmt_update_subsequent = $conn->prepare("
+                UPDATE scoreboard sb
+                JOIN result r ON sb.resid = r.resid
+                SET
+                    sb.scored = sb.scored - ?, 
+                    sb.lost = sb.lost - ?
+                WHERE
+                    r.sid = ? 
+                    AND sb.sbid > ?
+            ");
+            // Bind parameters: delta_scored, delta_lost, sid_of_action, sbid_of_deleted_scoreboard_entry
+            $stmt_update_subsequent->bind_param("ddii", $delta_scored_change, $delta_lost_change, $sid_of_deleted_action, $sbid_of_deleted_scoreboard_entry);
+            if (!$stmt_update_subsequent->execute()) {
+                throw new Exception("Could not update subsequent scoreboard entries for set $sid_of_deleted_action.");
+            }
+            $stmt_update_subsequent->close();
+        }
+        
+        // Commit transaction
+        $conn->commit();
+        redirectToStats($mid, $sid, "Successfully deleted action and adjusted scores.");
+
+    } catch (Exception $e) {
+        // Rollback transaction on error
+        $conn->rollback();
+        redirectToStats($mid, $sid, "Error: could not delete action - " . $e->getMessage());
+    }
 } else {
     // Invalid action
-    redirectToStats($mid, $sid, "Error: Invalid action");
+    redirectToStats($mid, $sid, "Error: Invalid action type specified.");
 }
 
 // Close the database connection
