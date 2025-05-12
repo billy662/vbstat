@@ -796,31 +796,64 @@
 					
 					const pidValue = selectedPid.value;
 					const ridValue = selectedRid.value;
-					
-					selectedRidPidPair = getSelectedRidPidPair();
 
-					// Check if selectedPid is in the array
-					let pidFound = false;
-					for (let i = 0; i < selectedRidPidPair.length; i++) {
-						if (selectedRidPidPair[i][0] == pidValue) {
-							selectedRidPidPair[i][1] = ridValue;
-							pidFound = true;
-							break;
+					// Check for repetitive input
+					const lastAction = <?php echo json_encode($lastAction); ?>;
+					if (lastAction) {
+						const selectedPid = pidValue;
+						const selectedRid = ridValue;
+						const selectedAid = aidInput.value;
+
+						if (
+							selectedPid == lastAction.pid &&
+							selectedRid == lastAction.rid &&
+							selectedAid == lastAction.aid
+						) {
+							// Show a modal for repetitive input
+							const modal = new bootstrap.Modal(document.getElementById('repetitiveInputModal'));
+							modal.show();
+
+							// Handle modal actions
+							const proceedButton = document.getElementById('proceedButton');
+							const cancelButton = document.getElementById('cancelButton');
+
+							proceedButton.onclick = function() {
+								document.querySelector('form').submit();
+							};
+
+							cancelButton.onclick = function() {
+								modal.hide();
+							};
+
+							aidInput.checked = false; // Uncheck the aid radio button
+						}
+						else {
+							selectedRidPidPair = getSelectedRidPidPair();
+
+							// Check if selectedPid is in the array
+							let pidFound = false;
+							for (let i = 0; i < selectedRidPidPair.length; i++) {
+								if (selectedRidPidPair[i][0] == pidValue) {
+									selectedRidPidPair[i][1] = ridValue;
+									pidFound = true;
+									break;
+								}
+							}
+
+							// If selectedPid is not found, add the pair to the array
+							if (!pidFound) {
+								selectedRidPidPair.push([pidValue, ridValue]);
+							}
+
+							// Update the cookie with the new array
+							const expiryDate = new Date();
+							expiryDate.setMonth(expiryDate.getMonth() + 1); // Cookie expires in 1 month
+							document.cookie = `selectedridpidpair=${JSON.stringify(selectedRidPidPair)}; path=/; expires=${expiryDate.toUTCString()}`;
+
+							// Submit the form
+							document.querySelector('form').submit();
 						}
 					}
-
-					// If selectedPid is not found, add the pair to the array
-					if (!pidFound) {
-						selectedRidPidPair.push([pidValue, ridValue]);
-					}
-
-					// Update the cookie with the new array
-					const expiryDate = new Date();
-					expiryDate.setMonth(expiryDate.getMonth() + 1); // Cookie expires in 1 month
-					document.cookie = `selectedridpidpair=${JSON.stringify(selectedRidPidPair)}; path=/; expires=${expiryDate.toUTCString()}`;
-
-					// Submit the form
-					document.querySelector('form').submit();
 				});
 			});
 
@@ -1090,6 +1123,26 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 					<button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Repetitive Input Modal -->
+	<div class="modal fade" id="repetitiveInputModal" tabindex="-1" aria-labelledby="repetitiveInputModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" style="max-width: 800px; width: 90%;">
+			<div class="modal-content bg-dark text-white">
+				<div class="modal-header">
+					<h5 class="modal-title" id="repetitiveInputModalLabel">Repetitive Input Detected</h5>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					It seems like you are entering the same action as the last one.<br />
+					Do you want to proceed?
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" id="cancelButton" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-warning" id="proceedButton">Proceed</button>
 				</div>
 			</div>
 		</div>
