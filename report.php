@@ -317,7 +317,7 @@ function processResults(array $results, array $actions_by_category): array {
                 $stats['player_attack_stats'][$player] = ['kills' => 0, 'errors' => 0, 'attempts' => 0];
             }
             if (!isset($stats['player_serve_stats'][$player])) {
-                $stats['player_serve_stats'][$player] = ['aces' => 0, 'errors' => 0, 'attempts' => 0];
+                $stats['player_serve_stats'][$player] = ['aces' => 0, 'errors' => 0, '發球破壞一傳' => 0, 'attempts' => 0];
             }
             if (!isset($stats['player_block_stats'][$player])) {
                 $stats['player_block_stats'][$player] = ['points' => 0, 'errors' => 0, 'effective' => 0, 'attempts' => 0]; // Added attempts for context
@@ -344,7 +344,10 @@ function processResults(array $results, array $actions_by_category): array {
                 } elseif ($aid === 23) { // Error: 發球失分
                     $stats['player_serve_stats'][$player]['errors']++;
                     $stats['player_serve_stats'][$player]['attempts']++;
-                } elseif (in_array($aid, [22, 30])) { // Other attempts: 發球, 發球破壞一傳
+                } elseif ($aid === 30) { // 發球破壞一傳
+                    $stats['player_serve_stats'][$player]['發球破壞一傳']++;
+                    $stats['player_serve_stats'][$player]['attempts']++;
+                } elseif ($aid === 22) { // Other attempts: 發球
                     $stats['player_serve_stats'][$player]['attempts']++;
                 }
             }
@@ -421,6 +424,7 @@ function processResults(array $results, array $actions_by_category): array {
     foreach ($stats['player_serve_stats'] as $player => &$p_stats) {
         $p_stats['ace_rate'] = calculate_percentage($p_stats['aces'], $p_stats['attempts']);
         $p_stats['error_rate'] = calculate_percentage($p_stats['errors'], $p_stats['attempts']);
+        $p_stats['破壞一傳_rate'] = calculate_percentage($p_stats['發球破壞一傳'], $p_stats['attempts']);
     }
     unset($p_stats);
 
@@ -758,7 +762,7 @@ function renderPlayerServePerformanceTable(array $stats): void {
     echo '<h3 class="text-light">Player Serve Performance</h3>';
     echo '<div class="table-responsive">';
     echo '<table class="table table-dark table-striped table-bordered table-sm">';
-    echo '<thead><tr><th>Player</th><th class="numeric">Attempts</th><th class="numeric">Aces</th><th class="numeric">Ace %</th><th class="numeric">Errors</th><th class="numeric">Error %</th></tr></thead>';
+    echo '<thead><tr><th>Player</th><th class="numeric">Attempts</th><th class="numeric">Aces</th><th class="numeric">Ace %</th><th class="numeric">Errors</th><th class="numeric">Error %</th><th class="numeric">發球破壞一傳</th><th class="numeric">%</th></tr></thead>';    
     echo '<tbody>';
     if (empty($stats)) {
         echo '<tr><td colspan="6">No serve data matching filters.</td></tr>';
@@ -772,7 +776,9 @@ function renderPlayerServePerformanceTable(array $stats): void {
             echo '<td class="numeric positive">' . $data['aces'] . '</td>';
             echo '<td class="numeric positive">' . number_format($data['ace_rate'], 1) . '%</td>';
             echo '<td class="numeric negative">' . $data['errors'] . '</td>';
-            echo '<td class="numeric negative">' . number_format($data['error_rate'], 1) . '%</td>';
+            echo '<td class="numeric negative">' . number_format($data['error_rate'], 1) . '%</td>';  
+            echo '<td class="numeric neutral">' . $data['發球破壞一傳'] . '</td>';
+            echo '<td class="numeric neutral">' . number_format($data['破壞一傳_rate'], 1) . '%</td>';
             echo '</tr>';
         }
     }
