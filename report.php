@@ -219,7 +219,8 @@ function processResults(array $results, array $actions_by_category): array {
         'player_serve_stats' => [],  // Added for Serve Performance
         'player_block_stats' => [],  // Added for Block Performance
         'team_scoring_sources' => ['total_scored' => 0, 'attack_kills' => 0, 'block_points' => 0, 'aces' => 0, 'opponent_errors' => 0],
-        'team_error_sources' => ['total_lost' => 0, 'attack_errors' => 0, 'serve_errors' => 0, 'reception_errors' => 0, 'block_errors' => 0, 'setting_errors' => 0, 'cover_errors' => 0, 'other_errors' => 0]
+        'team_error_sources' => ['total_lost' => 0, 'attack_errors' => 0, 'serve_errors' => 0, 'reception_errors' => 0, 'block_errors' => 0, 'setting_errors' => 0, 'cover_errors' => 0, 'other_errors' => 0],
+        'attack_by_role_stats' => [] // Added for Attack by Role distribution
     ];
 
     // DaWu Maps
@@ -365,6 +366,14 @@ function processResults(array $results, array $actions_by_category): array {
             }
         } // End player specific stats
 
+        // --- Attack by Role Stats Calculation (Inside Loop) ---
+        if ($category === '進攻' && $role !== '對方<br>球員') {
+            if (!isset($stats['attack_by_role_stats'][$role])) {
+                $stats['attack_by_role_stats'][$role] = ['count' => 0];
+            }
+            $stats['attack_by_role_stats'][$role]['count']++;
+        }
+
         // --- Team Stats Calculation (Inside Loop) ---
         if ($score > 0) {
             $stats['team_scoring_sources']['total_scored'] += $score;
@@ -455,6 +464,18 @@ function processResults(array $results, array $actions_by_category): array {
         if ($point_diff !== 0) return $point_diff;
         return $stats['player_block_stats'][$a]['errors'] <=> $stats['player_block_stats'][$b]['errors'];
     });
+
+    // Calculate Attack by Role Percentages and Sort
+    $total_attacks_by_role = 0;
+    foreach ($stats['attack_by_role_stats'] as $role_stats) {
+        $total_attacks_by_role += $role_stats['count'];
+    }
+    foreach ($stats['attack_by_role_stats'] as $role => &$role_stats) {
+        $role_stats['percentage'] = calculate_percentage($role_stats['count'], $total_attacks_by_role);
+    }
+    unset($role_stats); // Unset reference
+    $stats['attack_by_role_stats']['total_attacks'] = $total_attacks_by_role; // Store total for rendering
+    ksort($stats['attack_by_role_stats']); // Sort roles alphabetically
 
     return $stats;
 } // End function processResults
@@ -839,6 +860,41 @@ function renderTeamErrorSourceTable(array $stats): void {
     echo '</tbody></table></div>';
 }
 
+/**
+ * Renders the Attack by Role Distribution table.
+ *
+ * @param array $stats The attack_by_role_stats array.
+ */
+function renderAttackByRoleStatsTable(array $stats): void {
+    echo '<h3 class="text-light">Attack Distribution by Role</h3>';
+    echo '<div class="table-responsive">';
+    echo '<table class="table table-dark table-striped table-bordered table-sm">';
+    echo '<thead><tr><th>Role</th><th class="numeric">Attack Count</th><th class="numeric">Percentage</th></tr></thead>';
+    echo '<tbody>';
+
+    $total_attacks = $stats['total_attacks'] ?? 0;
+    unset($stats['total_attacks']); // Remove before looping
+
+    if ($total_attacks == 0) {
+        echo '<tr><td colspan="3">No attack data matching filters.</td></tr>';
+    } else {
+        foreach ($stats as $role => $data) {
+            if ($role === 'total_attacks') continue; // Skip the manually added total
+            echo '<tr>';
+            echo '<td>' . htmlspecialchars($role) . '</td>';
+            echo '<td class="numeric">' . $data['count'] . '</td>';
+            echo '<td class="numeric">' . number_format($data['percentage'], 1) . '%</td>';
+            echo '</tr>';
+        }
+        echo '<tr class="table-group-divider">';
+        echo '<th>Total Attacks</th>';
+        echo '<td class="numeric"><strong>' . $total_attacks . '</strong></td>';
+        echo '<td class="numeric"><strong>100.0%</strong></td>';
+        echo '</tr>';
+    }
+    echo '</tbody></table></div>';
+}
+
 
 // =============================================================================
 // Main Script Logic
@@ -882,6 +938,7 @@ $player_serve_stats = $processed_stats['player_serve_stats'];
 $player_block_stats = $processed_stats['player_block_stats'];
 $team_scoring_sources = $processed_stats['team_scoring_sources'];
 $team_error_sources = $processed_stats['team_error_sources'];
+$attack_by_role_stats = $processed_stats['attack_by_role_stats']; // Added this line
 
 
 // --- Close Database Connection ---
@@ -1028,6 +1085,8 @@ $conn->close();
         <?php renderScoreTable('Score Contribution by Player', $score_by_player, 'Player'); ?>
 
         <?php renderScoreTable('Score Contribution by Role', $score_by_role, 'Role'); ?>
+
+        <?php renderAttackByRoleStatsTable($attack_by_role_stats); ?>
 
         <hr class="border-secondary">
         <h2 class="text-light">Player Performance Metrics</h2>
