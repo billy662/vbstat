@@ -783,6 +783,9 @@
 			const aidInputs = document.querySelectorAll('input[name="aid"]');
 			aidInputs.forEach(aidInput => {
 				aidInput.addEventListener('change', function(event) {
+					// Store the selected aid value
+    				const selectedAid = aidInput.value;
+
 					// Check if required fields are selected
 					const selectedPid = document.querySelector('input[name="pid"]:checked');
 					const selectedRid = document.querySelector('input[name="rid"]:checked');
@@ -818,14 +821,16 @@
 							const cancelButton = document.getElementById('cancelButton');
 
 							proceedButton.onclick = function() {
+                				// Ensure the aid is selected before submitting
+								aidInput.checked = true;
 								document.querySelector('form').submit();
 							};
 
 							cancelButton.onclick = function() {
 								modal.hide();
 							};
-
-							aidInput.checked = false; // Uncheck the aid radio button
+							
+							aidInput.checked = false;
 						}
 						else {
 							selectedRidPidPair = getSelectedRidPidPair();
@@ -853,6 +858,10 @@
 							// Submit the form
 							document.querySelector('form').submit();
 						}
+					}
+					else if (lastAction === null) {
+						// Submit the form if this is the first action
+						document.querySelector('form').submit();
 					}
 				});
 			});
